@@ -23,7 +23,12 @@ abstract class process
         $this->processes[$processName] = $this->process;
         $this->handleCallback($this->process);
         $this->process->start();
-        $this->process->name = $processName;
+        $this->setProcessNmae($processName);
+    }
+
+    private function setProcessNmae($processName)
+    {
+        swoole_set_process_name($processName);
     }
 
     /**
@@ -50,14 +55,6 @@ abstract class process
         });
     }
 
-
-    public function setProcessName($oldNmae,$newName)
-    {
-        if (!empty($oldNmae) && !empty($newName)) {
-            $this->processes[$newName] = $this->processes[$oldNmae];
-            unset($this->processes[$oldNmae]);
-        }
-    }
 
     public function getProcessNameAll()
     {

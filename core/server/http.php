@@ -36,7 +36,7 @@ class http
         $controller = self::getController($path_info);
         $method = self::getMethod($path_info);
         $class = new \ReflectionClass("\\admin\\controller\\".$controller);
-        $instance = $class->newInstance();
+        $instance = $class->newInstance($request);
         try {
             $class->getMethod($method);
         }catch (\Exception $exception){
@@ -45,7 +45,11 @@ class http
         if (!$class->getMethod($method)->isPublic()) {
             return self::responseHandle($response,(new result("10000",false,"无权访问")));
         }
-        $result = $class->getMethod($method)->invoke($instance);
+        try {
+            $result = $class->getMethod($method)->invoke($instance);
+        }catch (\Exception $exception) {
+            return self::responseHandle($response,(new result("10000",false,$exception->getMessage())));
+        }
         //默认json输出
         return self::responseHandle($response,$result);
     }

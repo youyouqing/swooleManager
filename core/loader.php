@@ -8,8 +8,6 @@
 
 namespace core;
 
-use think\Db;
-use think\Model;
 
 class loader
 {

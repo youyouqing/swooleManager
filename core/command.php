@@ -12,14 +12,16 @@ namespace core;
 class command
 {
 
-    public function __construct(){}
+    public function __construct()
+    {
+    }
 
     static public function handle($argv)
     {
         if (empty($argv)) {
             exit("命令行格式不正确");
         }
-        switch (array_pop($argv)){
+        switch (array_pop($argv)) {
             case "http":
                 self::httpHandle($argv);
                 break;

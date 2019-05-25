@@ -14,9 +14,13 @@ class Di
     static $instance;
     private $container = array();
 
-    private function __construct(){}
+    private function __construct()
+    {
+    }
 
-    private function __clone(){}
+    private function __clone()
+    {
+    }
 
     static public function shareInstance()
     {
@@ -43,7 +47,7 @@ class Di
 
     function get($key)
     {
-        if(isset($this->container[$key])){
+        if (isset($this->container[$key])) {
             $obj = $this->container[$key];
             return $obj;
         }

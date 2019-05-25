@@ -13,13 +13,13 @@ class loader
 {
     static public function load()
     {
-        spl_autoload_register("core\\loader::autoload",true,true);
+        spl_autoload_register("core\\loader::autoload", true, true);
     }
 
 
     static public function autoload($class)
     {
-        $file = ROOT_PATH."/".str_replace("\\","/",$class.".php");
+        $file = ROOT_PATH . "/" . str_replace("\\", "/", $class . ".php");
         if (is_file($file)) {
             include $file;
         }
@@ -29,7 +29,7 @@ class loader
     static public function includeCore($dirpath)
     {
         $arr = [];
-        self::getCorePath($dirpath,$arr);
+        self::getCorePath($dirpath, $arr);
         foreach ($arr as $path) {
             if (is_file($path)) {
                 include_once $path;
@@ -39,10 +39,10 @@ class loader
 
     static public function includeComposer()
     {
-        $file = VENDOR_PATH.'/autoload.php';
+        $file = VENDOR_PATH . '/autoload.php';
         if (file_exists($file)) {
             require $file;
-        }else{
+        } else {
             die("include composer autoload.php fail\n");
         }
     }
@@ -50,10 +50,10 @@ class loader
     static public function includeConfig($dirpath)
     {
         $arr = [];
-        self::getCorePath($dirpath,$arr);
+        self::getCorePath($dirpath, $arr);
         foreach ($arr as $path) {
             $fileName = pathinfo($path)["filename"];
-            Di::shareInstance()->set("config.{$fileName}",include_once $path);
+            Di::shareInstance()->set("config.{$fileName}", include_once $path);
         }
     }
 
@@ -66,16 +66,16 @@ class loader
     }
 
 
-    static private function getCorePath($dirpath ,&$arr)
+    static private function getCorePath($dirpath, &$arr)
     {
         if (is_dir($dirpath)) {
             $hadle = @opendir($dirpath);
             while ($file = readdir($hadle)) {
-                if (!in_array($file,[".",".."])) {
-                    $subdir = $dirpath."/".$file;
-                    array_push($arr,$subdir);
+                if (!in_array($file, [".", ".."])) {
+                    $subdir = $dirpath . "/" . $file;
+                    array_push($arr, $subdir);
                     if (is_dir($subdir)) {
-                        self::getCorePath($subdir,$arr);
+                        self::getCorePath($subdir, $arr);
                     }
                 }
             }

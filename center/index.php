@@ -9,13 +9,13 @@ if (extension_loaded('xdebug')) {
 }
 date_default_timezone_set("Asia/Shanghai");
 
-define("ROOT_PATH",dirname(__DIR__));
-define("CORE_PATH",ROOT_PATH."/core");
-define("VENDOR_PATH",ROOT_PATH."/vendor");
-define("ADMIN_PATH",ROOT_PATH."/admin");
+define("ROOT_PATH", dirname(__DIR__));
+define("CORE_PATH", ROOT_PATH . "/core");
+define("VENDOR_PATH", ROOT_PATH . "/vendor");
+define("ADMIN_PATH", ROOT_PATH . "/admin");
 
 
-require_once CORE_PATH."/loader.php";
+require_once CORE_PATH . "/loader.php";
 
 // 加载核心文件
 \core\loader::includeCore(CORE_PATH);

@@ -10,14 +10,83 @@ namespace admin\controller;
 
 
 use admin\common\result;
+use core\Di;
+use core\http;
 
 class base
 {
     public $request;
+    public $response;
+    public $custome;
+    public $diModel;
 
-    public function __construct($request)
+    public $user;
+    public $token;
+
+    private $skipMap = [
+        'user' => [
+            'login',
+            'register',
+        ]
+    ];
+
+    public function __construct($request , $response , $custome)
     {
         $this->request = $request;
+        $this->response = $response;
+        $this->custome = $custome;
+        $this->handle_token();
+        $this->init();
+    }
+
+    public function init(){}
+
+    public function handle_token()
+    {
+        $token = $this->serverParams('token');
+        $controller = $this->custome['controller'];
+        $method = $this->custome['method'];
+        $this->token = $token;
+        $skipToken = false;
+        if (in_array($controller,array_keys($this->skipMap))) {
+            if (in_array($method , array_values($this->skipMap[$controller]))) {
+                //跳过token验证
+                $skipToken = true;
+            }
+        }
+        if (!$skipToken) {
+            if (empty($token)) {
+                return $this->tokenError("token不能为空");
+            }
+            $userId = Di::shareInstance()->get("REDIS")->get('token|'.$token);
+            $userRes = \admin\model\user::where(['id' => $userId])->find();
+            if (empty($userRes)) {
+                return $this->tokenError("token非法");
+            }
+            if ($userRes['status'] != 1) {
+                return $this->tokenError("用户被冻结");
+            }
+            $this->user = $userRes;
+        }
+    }
+
+    private function tokenError($msg)
+    {
+        return http::responseHandle($this->response , $this->resultJson( -10 , false , $msg));
+    }
+
+    /**
+     * 注入di模型
+     * @return bool|mixed
+     * @throws \ReflectionException
+     */
+    private function setModelDi()
+    {
+        if (!Di::shareInstance()->get('model.'.$this->custome['controller'])) {
+            $class = new \ReflectionClass("\\admin\\model\\".$this->custome['controller']);
+            Di::shareInstance()->set('model'.$this->custome['controller'],$class->newInstance());
+        }
+        return Di::shareInstance()->get('model.'.$this->custome['controller']);
     }
 
 
@@ -58,6 +127,9 @@ class base
 
     public function serverParams($key = false)
     {
+        if ($key) {
+            return $this->getParams($key) ? $this->getParams($key) : $this->postParams($key);
+        }
         return array_merge($this->getParams($key) ?? [] , $this->postParams($key) ?? []);
     }
 

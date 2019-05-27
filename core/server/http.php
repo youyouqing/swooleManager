@@ -36,7 +36,9 @@ class http
         $controller = self::getController($path_info);
         $method = self::getMethod($path_info);
         $class = new \ReflectionClass("\\admin\\controller\\".$controller);
-        $instance = $class->newInstance($request);
+        $custome['controller'] = $controller;
+        $custome['method'] = $method;
+        $instance = $class->newInstance($request , $response, $custome);
         try {
             $class->getMethod($method);
         }catch (\Exception $exception){

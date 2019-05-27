@@ -9,6 +9,8 @@
 namespace core;
 
 
+use think\cache\driver\Redis;
+
 class loader
 {
     static public function load()
@@ -62,8 +64,17 @@ class loader
      */
     static public function initDatabases()
     {
-        Di::shareInstance()->set("MYSQL");
+        Di::shareInstance()->set("MYSQL",null);
     }
+
+    /**
+     * 初始化redis 注入di
+     */
+    static public function initRedis()
+    {
+        Di::shareInstance()->set("REDIS",(new Redis(Di::shareInstance()->get("config.redis"))));
+    }
+
 
 
     static private function getCorePath($dirpath, &$arr)

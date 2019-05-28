@@ -1,7 +1,9 @@
 <?php
 
+
 return [
-    "host" => "127.0.0.1",
-    "port" => "6379",
-    "pwd" => "zhicongdai"
+    //docker 内网
+    "host" => '172.20.199.5',
+    "port" => '6379',
+    "password" => ''
 ];

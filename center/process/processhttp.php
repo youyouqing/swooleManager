@@ -13,7 +13,7 @@ use core\process\src\process;
 class processhttp extends process
 {
     //进程执行任务
-    public function onStart($process)
+    public function onStart($process , $task)
     {
         //开启http服务   http和调度中心一体化
         $process->exec("/usr/local/bin/php",[

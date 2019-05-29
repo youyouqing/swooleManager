@@ -10,19 +10,18 @@ namespace center\process;
 
 use core\process\src\process;
 
-class processexec extends process
+class processListen extends process
 {
     //进程执行任务
-    public function onStart($process , $task)
+    public function onStart($process)
     {
-        print_r($process);
-        echo "begin";
+
     }
 
     //接受管道消息
     public function onPipRead($processMsg)
     {
-        echo "222222:" . $processMsg;
+
     }
 
 }

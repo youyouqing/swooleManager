@@ -4,4 +4,7 @@ require_once "../core/init.php";
 
 \core\loader::load();
 
-new \center\process\processhttp("php:http-process");
+//新增http进程
+(new \center\process\processhttp("php:http-process"));
+
+//新增监听进程

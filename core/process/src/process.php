@@ -11,22 +11,25 @@ namespace core\process\src;
 abstract class process
 {
     protected $process;
+    protected $worker;
+    protected $task = [];
     protected $processes;
 
-    public function __construct($processName)
+    public function __construct($processName , $task = [])
     {
-        $this->process = new \swoole_process(function (){
-            if ($this->process){
-                $this->onStart($this->process);
-            }
+        $this->process = new \swoole_process(function (\swoole_process $worker){
+            $this->process and $this->onStart($worker , $this->task);
+            $this->process and $this->handleCallback($worker);
+            $worker        and $this->worker = $worker;
         });
+
+        $this->task = $task;
         $this->processes[$processName] = $this->process;
-        $this->handleCallback($this->process);
         $this->process->start();
-        $this->setProcessNmae($processName);
+        $this->setProcessName($processName);
     }
 
-    private function setProcessNmae($processName)
+    private function setProcessName($processName)
     {
         swoole_set_process_name($processName);
     }
@@ -42,7 +45,7 @@ abstract class process
             while ($ret = \Swoole\Process::wait(false)) {
                 // create a new child process
                 $p = new \Swoole\Process(function (){
-                    $this->onStart();
+                    $this->onStart($this->worker , $this->task);
                 });
                 $p->start();
             }
@@ -50,6 +53,7 @@ abstract class process
 
         \swoole_event_add($process->pipe, function ($pipe) use ($process) {
             $processMsg = $process->read();
+            echo $processMsg;
             //回调管道消息
             $this->onPipRead($processMsg);
         });
@@ -62,7 +66,7 @@ abstract class process
     }
 
     //进程执行任务
-    abstract function onStart($process);
+    abstract function onStart($process , $task);
 
     //接受管道消息
     abstract function onPipRead($processMsg);

@@ -7,7 +7,7 @@ return [
     // 数据库名
     'database'        => 'webcron',
     // 用户名
-    'username'        => 'root',
+    'username'        => 'zhicongdai',
     // 密码
     'password'        => 'zhicongdai',
     // 端口

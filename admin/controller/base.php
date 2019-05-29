@@ -23,6 +23,8 @@ class base
     public $user;
     public $token;
 
+    protected $need_token = true;
+
     private $skipMap = [
         'user' => [
             'login',
@@ -35,7 +37,7 @@ class base
         $this->request = $request;
         $this->response = $response;
         $this->custome = $custome;
-        $this->handle_token();
+        $this->need_token and $this->handle_token();
         $this->init();
     }
 

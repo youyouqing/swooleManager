@@ -39,8 +39,3 @@ require_once CORE_PATH . "/loader.php";
 
 //注入简单log
 \core\loader::initLogs();
-//echo \core\ServerManager::shareInstance()->getSwooleServer();
-
-
-
-//print_r(\core\TableManager::shareInstance()->getTable(\core\task::TABLE_NAME_TASK,2));

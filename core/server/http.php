@@ -13,23 +13,16 @@ use app\common\result;
 use core\loader;
 
 class http
-//    implements server
 {
 
     static public function beforeRequest()
     {
-//        echo "beforeRequest".PHP_EOL;
+
     }
 
     static public function afterRequest()
     {
-        //初始化任务
-//        task::shareInstance()->syncTables();
-//        $server =  ServerManager::shareInstance()->getSwooleServer();
-//        echo 2222;
-//        var_dump($server);
-//        echo 111;
-//        echo "afterRequest".PHP_EOL;
+
     }
 
     static public function onRequest($request, $response)
@@ -65,11 +58,10 @@ class http
 
     static public function onWorkerStart($serv, $worker_id)
     {
-//        task::shareInstance()->atest();
-
-
         $serv->tick(1000, function ($id) use ($serv) {
-//            $serv->reload();
+            //TODO   热更新
+
+            //$serv->reload();
         });
     }
 

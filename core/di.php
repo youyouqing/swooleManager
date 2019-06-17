@@ -11,9 +11,16 @@ namespace core;
 
 class Di
 {
+
+    //DI配置名称
+    const DI_LOG = "LOG";//日志容器
+    const DI_MYSQL = "MYSQL";//db容器
+    const DI_REDIS = "REDIS";//redis容器
+    const DI_CONFIG = "CONFIG";//配置容器
+
+
     static $instance;
     private $container = array();
-
     private function __construct()
     {
     }

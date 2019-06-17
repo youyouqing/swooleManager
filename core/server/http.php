@@ -6,10 +6,11 @@
  * Time: 20:02
  */
 
-namespace core;
+namespace core\server;
 
 
-use admin\common\result;
+use app\common\result;
+use core\loader;
 
 class http
 //    implements server
@@ -17,12 +18,18 @@ class http
 
     static public function beforeRequest()
     {
-        echo "beforeRequest".PHP_EOL;
+//        echo "beforeRequest".PHP_EOL;
     }
 
     static public function afterRequest()
     {
-        echo "afterRequest".PHP_EOL;
+        //初始化任务
+//        task::shareInstance()->syncTables();
+//        $server =  ServerManager::shareInstance()->getSwooleServer();
+//        echo 2222;
+//        var_dump($server);
+//        echo 111;
+//        echo "afterRequest".PHP_EOL;
     }
 
     static public function onRequest($request, $response)
@@ -35,7 +42,7 @@ class http
         $path_info = $request->server['path_info'];
         $controller = self::getController($path_info);
         $method = self::getMethod($path_info);
-        $class = new \ReflectionClass("\\admin\\controller\\".$controller);
+        $class = new \ReflectionClass("\\app\\controller\\".$controller);
         $custome['controller'] = $controller;
         $custome['method'] = $method;
         $instance = $class->newInstance($request , $response, $custome);
@@ -54,6 +61,16 @@ class http
         }
         //默认json输出
         return self::responseHandle($response,$result);
+    }
+
+    static public function onWorkerStart($serv, $worker_id)
+    {
+//        task::shareInstance()->atest();
+
+
+        $serv->tick(1000, function ($id) use ($serv) {
+//            $serv->reload();
+        });
     }
 
 

@@ -11,19 +11,36 @@ date_default_timezone_set("Asia/Shanghai");
 
 define("ROOT_PATH", dirname(__DIR__));
 define("VENDOR_PATH", ROOT_PATH . "/vendor");
-define("ADMIN_PATH", ROOT_PATH . "/admin");
+define("APP_PATH", ROOT_PATH . "/app");
 define("CORE_PATH", ROOT_PATH . "/core");
-define("CONFIG_PATH", ADMIN_PATH . "/config");
+define("CONFIG_PATH", APP_PATH . "/config");
 define("PUBLIC_PATH", ROOT_PATH . "/public");
-define("PID_FILE", ADMIN_PATH . "/runtime/server.pid");
+define("PID_FILE", APP_PATH . "/runtime/server.pid");
 
 require_once CORE_PATH . "/loader.php";
 
 // 加载核心文件
 \core\loader::includeCore(CORE_PATH);
 
+\core\loader::load();
+
 // 加载并注入配置文件
 \core\loader::includeConfig(CONFIG_PATH);
 
+
+// 加载并注入mysqli
+//\core\loader::initDatabases();
+
+// 加载并注入redis
+//\core\loader::initRedis();
+
 // 加载composer
 \core\loader::includeComposer();
+
+//注入简单log
+\core\loader::initLogs();
+//echo \core\ServerManager::shareInstance()->getSwooleServer();
+
+
+
+//print_r(\core\TableManager::shareInstance()->getTable(\core\task::TABLE_NAME_TASK,2));

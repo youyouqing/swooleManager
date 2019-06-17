@@ -33,7 +33,7 @@ class config
 
     public function loadConfig()
     {
-        echo "loadconfig";
+//        echo "loadconfig";
     }
 
     public function getConfig()

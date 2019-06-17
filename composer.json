@@ -1,5 +1,7 @@
 {
     "require": {
-        "topthink/think-orm": "^2.0"
+        "topthink/think-orm": "^2.0",
+        "swoole/ide-helper": "~4.3.3",
+        "dragonmantank/cron-expression": "^2.3"
     }
 }

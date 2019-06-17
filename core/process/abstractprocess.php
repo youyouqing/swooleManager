@@ -1,15 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: yf
- * Date: 2018-12-27
- * Time: 01:41
- */
 
-namespace core\process\src\process;
+namespace core\process;
+
 use Swoole\Process;
 
-abstract class AbstractProcess
+class abstractprocess
 {
     private $swooleProcess;
     private $processName;
@@ -34,26 +29,6 @@ abstract class AbstractProcess
     public function getProcess():Process
     {
         return $this->swooleProcess;
-    }
-
-    /*
-     * 仅仅为了提示:在自定义进程中依旧可以使用定时器
-     */
-    public function addTick($ms,callable $call):?int
-    {
-        return Timer::getInstance()->loop(
-            $ms,$call
-        );
-    }
-
-    public function clearTick(int $timerId):?int
-    {
-        return Timer::getInstance()->clear($timerId);
-    }
-
-    public function delay($ms,callable $call):?int
-    {
-        return Timer::getInstance()->after($ms,$call);
     }
 
     /*
@@ -135,7 +110,7 @@ abstract class AbstractProcess
         throw $throwable;
     }
 
-    public abstract function run($arg);
-    public abstract function onShutDown();
-    public abstract function onReceive(string $str);
+    public  function run($arg){}
+    public  function onShutDown(){}
+    public  function onReceive(string $str){}
 }

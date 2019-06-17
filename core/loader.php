@@ -8,9 +8,6 @@
 
 namespace core;
 
-
-use think\cache\driver\Redis;
-
 class loader
 {
     static public function load()
@@ -44,8 +41,6 @@ class loader
         $file = VENDOR_PATH . '/autoload.php';
         if (file_exists($file)) {
             require $file;
-        } else {
-            die("include composer autoload.php fail\n");
         }
     }
 
@@ -55,7 +50,7 @@ class loader
         self::getCorePath($dirpath, $arr);
         foreach ($arr as $path) {
             $fileName = pathinfo($path)["filename"];
-            Di::shareInstance()->set("config.{$fileName}", include_once $path);
+            Di::shareInstance()->set(Di::DI_CONFIG.".{$fileName}", include_once $path);
         }
     }
 
@@ -64,7 +59,7 @@ class loader
      */
     static public function initDatabases()
     {
-        Di::shareInstance()->set("MYSQL",null);
+        //TODO
     }
 
     /**
@@ -72,12 +67,21 @@ class loader
      */
     static public function initRedis()
     {
-        Di::shareInstance()->set("REDIS",(new Redis(Di::shareInstance()->get("config.redis"))));
+        $redis = new \Redis();
+        $redis->pconnect(Di::shareInstance()->get(Di::DI_CONFIG.".redis")['host'] , Di::shareInstance()->get(Di::DI_CONFIG.".redis")['port']);
+        $redis->auth(Di::shareInstance()->get(Di::DI_CONFIG.".redis")['auth']);
+        Di::shareInstance()->set(Di::DI_REDIS,$redis);
     }
 
+    /**
+     * 初始化log 注入di
+     */
+    static public function initLogs()
+    {
+        Di::shareInstance()->set(Di::DI_LOG,(log::shareInstance()));
+    }
 
-
-    static private function getCorePath($dirpath, &$arr)
+    static private function getCorePath($dirpath, &$arr , $deep = false)
     {
         if (is_dir($dirpath)) {
             $hadle = @opendir($dirpath);
@@ -85,7 +89,8 @@ class loader
                 if (!in_array($file, [".", ".."])) {
                     $subdir = $dirpath . "/" . $file;
                     array_push($arr, $subdir);
-                    if (is_dir($subdir)) {
+                    if ($deep && is_dir($subdir)) {
+//                        print_r($subdir);exit();
                         self::getCorePath($subdir, $arr);
                     }
                 }

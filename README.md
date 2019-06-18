@@ -13,6 +13,7 @@ php --ri swoole
 
 启动http服务：
 ```bash
+composer config -g repo.packagist composer https://packagist.phpcomposer.com
 composer install
 cd app && php index.php http start
 ```

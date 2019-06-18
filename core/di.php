@@ -21,6 +21,7 @@ class Di
 
     static $instance;
     private $container = array();
+
     private function __construct()
     {
     }

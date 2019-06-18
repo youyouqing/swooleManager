@@ -1,8 +1,23 @@
 # swooleManager
 swooleManager   timer task
 
+查看swoole 版本方式：
+```bash
+php --ri swoole
 
-启动http服务：  cd app && php index.php http start
+# Swoole => enabled
+# Author => Swoole Team <team@swoole.com>
+# Version => 4.x
+```
+
+
+启动http服务：
+```bash
+composer config -g repo.packagist composer https://packagist.phpcomposer.com
+composer install
+cd app && php index.php http start
+```
+
 
 
 TODO

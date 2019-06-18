@@ -8,6 +8,3 @@ $args = $argv;
 
 // 处理命令
 \core\command::handle($args);
-
-
-

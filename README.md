@@ -1,6 +1,15 @@
 # swooleManager
 swooleManager   timer task
 
+查看swoole 版本方式：
+```bash
+php --ri swoole
+
+# Swoole => enabled
+# Author => Swoole Team <team@swoole.com>
+# Version => 4.x
+```
+
 
 启动http服务：
 ```bash

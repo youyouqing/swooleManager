@@ -2,7 +2,12 @@
 swooleManager   timer task
 
 
-启动http服务：  cd app && php index.php http start
+启动http服务：
+```bash
+composer install
+cd app && php index.php http start
+```
+
 
 
 TODO

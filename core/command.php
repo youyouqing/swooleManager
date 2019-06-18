@@ -20,6 +20,7 @@ class command
     static public function handle($argv)
     {
         if (empty($argv) || count($argv) < 3) {
+            echo json_encode($argv);
             exit("命令行格式不正确");
         }
         switch ($argv[1]) {

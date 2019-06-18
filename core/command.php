@@ -42,7 +42,7 @@ class command
     {
         switch ($argv[2]) {
             case "start" :
-                $configServer = Di::shareInstance()->get(Di::DI_CONFIG.".server");
+                $configServer = Di::shareInstance()->get(Di::DI_CONFIG . ".server");
 
                 \core\server\http::beforeRequest();
                 $httpServer = new \Swoole\Http\Server($configServer['host'], $configServer['port']);

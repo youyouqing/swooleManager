@@ -4,7 +4,7 @@ namespace core\process;
 
 use Swoole\Process;
 
-class abstractprocess
+abstract class abstractProcess
 {
     private $swooleProcess;
     private $processName;
@@ -110,7 +110,7 @@ class abstractprocess
         throw $throwable;
     }
 
-    public  function run($arg){}
-    public  function onShutDown(){}
-    public  function onReceive(string $str){}
+    abstract public function run($arg);
+    abstract public function onShutDown();
+    abstract public function onReceive(string $str);
 }

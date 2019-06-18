@@ -1,8 +1,9 @@
 <?php
 namespace core\task;
 
-use core\process\abstractprocess;
-use core\process\cronprocess;
+use core\Di;
+use core\process\abstractProcess;
+use core\process\cronProcess;
 use core\ServerManager;
 use core\TableManager;
 use Cron\CronExpression;
@@ -24,7 +25,7 @@ class task
     }
 
     /**
-     * 加载所有任务
+     * 加载所有任务（模拟数据）
      */
     public function loadTasks()
     {
@@ -36,6 +37,7 @@ class task
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/atestt.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
+                "status" => 1 //激活
             ],
             [
                 "id"   => 2,
@@ -44,6 +46,16 @@ class task
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
+                "status" => 2 //暂停
+            ],
+            [
+                "id"   => 3,
+                "rule" => "*/10 * * * *",
+                "excute_times" => 0,
+                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
+                "task_pre_time" => "",
+                "task_next_time" => "",
+                "status" => 3 //删除
             ]
         ];
         foreach ($taskList as $item){
@@ -53,6 +65,10 @@ class task
         return $this->tasks;
     }
 
+    /**
+     * 入内存表字段规则
+     * @return array
+     */
     public function getTablesRules()
     {
         return [
@@ -79,6 +95,10 @@ class task
             'task_pre_time' => [
                 'type' => TableManager::TYPE_STRING,
                 'size' => 255,
+            ],
+            'status'   => [
+                'type' => TableManager::TYPE_INT,
+                'size' => 4,
             ],
         ];
     }
@@ -121,16 +141,18 @@ class task
         }
         $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
         foreach ($tableTasks as $taskId => $value) {
+            if ($value['status'] != 1) {
+                continue;
+            }
             $task_next_time = CronExpression::factory($value['rule'])->getNextRunDate()->format("Y-m-d H:i:s");
             $task_pre_time = CronExpression::factory($value['rule'])->getPreviousRunDate()->format("Y-m-d H:i:s");
             $value['task_next_time'] = $task_next_time;
             $value['task_pre_time'] = $task_pre_time;
-            //TODO 入库mysql
+            //TODO 入库mysql  如何节耦合？
             $value['task_next_exec_time'] = CronExpression::factory($value['rule'])->getNextRunDate()->getTimestamp();
             $value['task_pre_exec_time'] = CronExpression::factory($value['rule'])->getPreviousRunDate()->getTimestamp();
             TableManager::shareInstance()->setTable(self::TABLE_NAME_TASK , $taskId, $value);
-            $cronProcess = new cronprocess("php-定时任务process-".$taskId,$value);
-            //一个任务一个进程   后续改成携程 TODO
+            $cronProcess = new cronProcess("php-定时任务process-".$taskId,$value);
             ServerManager::shareInstance()->getSwooleServer()->addProcess($cronProcess->getProcess());
         }
     }

@@ -8,7 +8,6 @@
 
 namespace core;
 
-use core\process\cronprocess;
 use core\task\task;
 
 class command
@@ -43,8 +42,6 @@ class command
     {
         switch ($argv[2]) {
             case "start" :
-                config::shareInstance()->loadConfig();
-
                 $configServer = Di::shareInstance()->get(Di::DI_CONFIG.".server");
 
                 \core\server\http::beforeRequest();

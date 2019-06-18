@@ -58,11 +58,14 @@ class http
 
     static public function onWorkerStart($serv, $worker_id)
     {
-        $serv->tick(1000, function ($id) use ($serv) {
-            //TODO   热更新
+        if ($worker_id == 0) {
+            $serv->tick(1000, function ($id) use ($serv,$worker_id){
+                //TODO   热更新
+                //$serv->reload();
+                echo $worker_id.PHP_EOL;
+            });
+        }
 
-            //$serv->reload();
-        });
     }
 
 

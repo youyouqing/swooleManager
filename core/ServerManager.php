@@ -27,7 +27,6 @@ class ServerManager
      */
     public function setSwooleServer($server)
     {
-        Di::shareInstance()->get("LOG")->log($server);
         $this->swooleServer = $server;
     }
 

@@ -35,34 +35,34 @@ class http
         $path_info = $request->server['path_info'];
         $controller = self::getController($path_info);
         $method = self::getMethod($path_info);
-        $class = new \ReflectionClass("\\app\\controller\\".$controller);
+        $class = new \ReflectionClass("\\app\\controller\\" . $controller);
         $custome['controller'] = $controller;
         $custome['method'] = $method;
-        $instance = $class->newInstance($request , $response, $custome);
+        $instance = $class->newInstance($request, $response, $custome);
         try {
             $class->getMethod($method);
-        }catch (\Exception $exception){
-            return self::responseHandle($response,(new result("10000",false,$exception->getMessage())));
+        } catch (\Exception $exception) {
+            return self::responseHandle($response, (new result("10000", false, $exception->getMessage())));
         }
         if (!$class->getMethod($method)->isPublic()) {
-            return self::responseHandle($response,(new result("10000",false,"无权访问")));
+            return self::responseHandle($response, (new result("10000", false, "无权访问")));
         }
         try {
             $result = $class->getMethod($method)->invoke($instance);
-        }catch (\Exception $exception) {
-            return self::responseHandle($response,(new result("10000",false,$exception->getMessage())));
+        } catch (\Exception $exception) {
+            return self::responseHandle($response, (new result("10000", false, $exception->getMessage())));
         }
         //默认json输出
-        return self::responseHandle($response,$result);
+        return self::responseHandle($response, $result);
     }
 
     static public function onWorkerStart($serv, $worker_id)
     {
         if ($worker_id == 0) {
-            $serv->tick(1000, function ($id) use ($serv,$worker_id){
+            $serv->tick(1000, function ($id) use ($serv, $worker_id) {
                 //TODO   热更新
                 //$serv->reload();
-                echo $worker_id.PHP_EOL;
+                echo $worker_id . PHP_EOL;
             });
         }
 
@@ -71,7 +71,7 @@ class http
 
     static public function getController($path_info)
     {
-        $path_info_arr = explode("/",$path_info);
+        $path_info_arr = explode("/", $path_info);
         if (count($path_info_arr) <= 2) {
             return "index";
         }
@@ -80,16 +80,16 @@ class http
 
     static public function getMethod($path_info)
     {
-        $path_info_arr = explode("/",$path_info);
+        $path_info_arr = explode("/", $path_info);
         if (count($path_info_arr) <= 2) {
             return "index";
         }
         return $path_info_arr[2];
     }
 
-    static public function responseHandle($response,$result)
+    static public function responseHandle($response, $result)
     {
         $response->header('content-type', 'application/json; charset=utf-8', true);
-        $response->end(json_encode((array)$result,JSON_UNESCAPED_UNICODE));
+        $response->end(json_encode((array)$result, JSON_UNESCAPED_UNICODE));
     }
 }

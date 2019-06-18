@@ -1,4 +1,5 @@
 <?php
+
 namespace core\task;
 
 use core\Di;
@@ -31,7 +32,7 @@ class task
     {
         $taskList = [
             [
-                "id"   => 1,
+                "id" => 1,
                 "rule" => "* * * * *",
                 "excute_times" => 0,
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/atestt.php",
@@ -40,7 +41,7 @@ class task
                 "status" => 1 //激活
             ],
             [
-                "id"   => 2,
+                "id" => 2,
                 "rule" => "*/30 * * * *",
                 "excute_times" => 0,
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
@@ -49,7 +50,7 @@ class task
                 "status" => 2 //暂停
             ],
             [
-                "id"   => 3,
+                "id" => 3,
                 "rule" => "*/10 * * * *",
                 "excute_times" => 0,
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
@@ -58,7 +59,7 @@ class task
                 "status" => 3 //删除
             ]
         ];
-        foreach ($taskList as $item){
+        foreach ($taskList as $item) {
             $this->tasks[$item['id']] = $item;
         }
 
@@ -72,7 +73,7 @@ class task
     public function getTablesRules()
     {
         return [
-            'id'   => [
+            'id' => [
                 'type' => TableManager::TYPE_INT,
                 'size' => 4,
             ],
@@ -96,7 +97,7 @@ class task
                 'type' => TableManager::TYPE_STRING,
                 'size' => 255,
             ],
-            'status'   => [
+            'status' => [
                 'type' => TableManager::TYPE_INT,
                 'size' => 4,
             ],
@@ -134,9 +135,9 @@ class task
     {
         $tasks = self::loadTasks();
         foreach ($tasks as $id => $value) {
-            $table = TableManager::shareInstance()->addTable(self::TABLE_NAME_TASK , self::getTablesRules() , 1024);
+            $table = TableManager::shareInstance()->addTable(self::TABLE_NAME_TASK, self::getTablesRules(), 1024);
             if ($table) {
-                $table->setTable(self::TABLE_NAME_TASK , $id, $value);
+                $table->setTable(self::TABLE_NAME_TASK, $id, $value);
             }
         }
         $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
@@ -151,8 +152,8 @@ class task
             //TODO 入库mysql  如何节耦合？
             $value['task_next_exec_time'] = CronExpression::factory($value['rule'])->getNextRunDate()->getTimestamp();
             $value['task_pre_exec_time'] = CronExpression::factory($value['rule'])->getPreviousRunDate()->getTimestamp();
-            TableManager::shareInstance()->setTable(self::TABLE_NAME_TASK , $taskId, $value);
-            $cronProcess = new cronProcess("php-定时任务process-".$taskId,$value);
+            TableManager::shareInstance()->setTable(self::TABLE_NAME_TASK, $taskId, $value);
+            $cronProcess = new cronProcess("php-定时任务process-" . $taskId, $value);
             ServerManager::shareInstance()->getSwooleServer()->addProcess($cronProcess->getProcess());
         }
     }

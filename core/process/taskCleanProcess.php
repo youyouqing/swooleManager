@@ -22,7 +22,8 @@ class taskCleanProcess extends abstractProcess
 
     public function run($arg)
     {
-
+        echo __CLASS__.PHP_EOL;
+        print_r($arg);
     }
 
     public function onReceive(string $str)

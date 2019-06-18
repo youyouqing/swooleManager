@@ -55,8 +55,10 @@ class command
                 ]);
                 $httpServer->on('request', 'core\\server\\http::onRequest');
                 $httpServer->on('WorkerStart', 'core\\server\\http::onWorkerStart');
+                $httpServer->on('pipeMessage', 'core\\server\\http::onPipeMessage');
                 ServerManager::shareInstance()->setSwooleServer($httpServer);
-                task::shareInstance()->syncTables();
+                CronManager::shareInstance()->taskLoadProcess();
+                CronManager::shareInstance()->taskAsyncProcess();
                 ServerManager::shareInstance()->getSwooleServer()->start();
                 break;
 

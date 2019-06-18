@@ -62,10 +62,18 @@ class http
             $serv->tick(1000, function ($id) use ($serv,$worker_id){
                 //TODO   热更新
                 //$serv->reload();
-                echo $worker_id.PHP_EOL;
+//                echo $worker_id.PHP_EOL;
             });
         }
 
+    }
+
+
+    static public function onPipeMessage($serv, $src_worker_id, $data)
+    {
+        if ($src_worker_id == 1) {
+            echo "#{$serv->worker_id} message from #$src_worker_id: $data\n";
+        }
     }
 
 

@@ -7,10 +7,10 @@ use core\Di;
 
 /**
  * 任务执行进程
- * Class cronProcess
+ * Class taskRunProcess
  * @package core\process
  */
-class cronProcess extends abstractProcess
+class taskRunProcess extends abstractProcess
 {
 
     //进程销毁

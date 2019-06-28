@@ -10,6 +10,7 @@ namespace core\server;
 
 
 use app\common\result;
+use core\CronManager;
 use core\loader;
 
 class http
@@ -63,6 +64,8 @@ class http
                 //TODO   热更新
                 //$serv->reload();
 //                echo $worker_id.PHP_EOL;
+                CronManager::shareInstance()->taskRunProcess();
+
             });
         }
 

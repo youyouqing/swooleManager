@@ -12,6 +12,7 @@ use core\process\taskAsyncProcess;
 use core\process\taskCleanProcess;
 use core\process\taskLoadProcess;
 use core\process\taskRunProcess;
+use Swoole\Server\Task;
 
 /**
  * 定时任务管理
@@ -37,6 +38,7 @@ class CronManager
      */
     public function taskLoadProcess()
     {
+
         $taskLoadProcess = new taskLoadProcess("php-taskLoadProcess");
         $this->collectionProcess($taskLoadProcess->getProcess());
     }
@@ -47,11 +49,17 @@ class CronManager
      * @param $taskId
      * @param $task
      */
-    public function taskRunProcess($taskId , $task)
+    public function taskRunProcess()
     {
-        $taskRunProcess = new taskRunProcess("php-runTaskProcess-".$taskId,$task);
-        print_r($taskRunProcess->getProcess());
-        $this->collectionProcess($taskRunProcess->getProcess());
+        $runTasks = TableManager::shareInstance()->getTable(\core\task\task::TABLE_RUN_TASK);
+        print_r($runTasks);
+        echo "run任务";
+        if (is_array($runTasks)) {
+            foreach ($runTasks as $taskId => $value) {
+                $taskRunProcess = new taskRunProcess("php-runTaskProcess-".$taskId,$value);
+                $this->collectionProcess($taskRunProcess->getProcess());
+            }
+        }
     }
 
     /**
@@ -61,7 +69,7 @@ class CronManager
      */
     public function taskAsyncProcess()
     {
-        $taskAsyncProcess = new taskAsyncProcess("php-taskAsyncProcess-");
+        $taskAsyncProcess = new taskAsyncProcess("php-taskAsyncProcess");
         $this->collectionProcess($taskAsyncProcess->getProcess());
     }
 

@@ -13,6 +13,8 @@ class task
 {
     const TABLE_NAME_TASK = "table_name_task";
 
+    const TABLE_RUN_TASK = "table_run_task";
+
     private $tasks = [];
 
     static $instance;
@@ -97,13 +99,13 @@ class task
     }
 
     /**
+     * 只读mysql表
      * 同步内存表
      */
-    public function syncTables($tasks)
+    public function loadTables($tasks)
     {
-        //TODO  内存表和进程过滤
+        $table = TableManager::shareInstance()->addTable(self::TABLE_NAME_TASK , self::getTablesRules() , 1024);
         foreach ($tasks as $id => $value) {
-            $table = TableManager::shareInstance()->addTable(self::TABLE_NAME_TASK , self::getTablesRules() , 1024);
             if ($table) {
                 $table->setTable(self::TABLE_NAME_TASK , $id, $value);
             }
@@ -120,8 +122,31 @@ class task
             $value['task_pre_time'] = $task_pre_time;
             $value['task_next_exec_time'] = CronExpression::factory($value['rule'])->getNextRunDate()->getTimestamp();
             $value['task_pre_exec_time'] = CronExpression::factory($value['rule'])->getPreviousRunDate()->getTimestamp();
-            print_r($value);
             TableManager::shareInstance()->setTable(self::TABLE_NAME_TASK , $taskId, $value);
+            $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
+            print_r($tableTasks);
+        }
+    }
+
+    /**
+     * 把内存表的数据拿出来 取出下一分钟的数据放到另一张内存表中
+     */
+    public function prepareTables()
+    {
+        $runTasksTables = TableManager::shareInstance()->addTable(self::TABLE_RUN_TASK , self::getTablesRules() , 1024);
+        $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
+        print_r($tableTasks);
+        print_r(1111);
+        $runTasks = TableManager::shareInstance()->getTable(self::TABLE_RUN_TASK);
+        if (!is_array($runTasks)) return;
+        $runTasks = array_keys($runTasks) ?? [];
+        if ($tableTasks) {
+            foreach ($tableTasks as $taskId => $value) {
+                print_r($value);
+                if (!in_array($taskId , $runTasks) and $value['task_next_exec_time'] and ($value['task_next_exec_time'] - time() <= 60)) {
+                    $runTasksTables->setTable(self::TABLE_RUN_TASK , $value['id'], $value);
+                }
+            }
         }
     }
 

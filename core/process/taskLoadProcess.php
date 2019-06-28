@@ -25,11 +25,9 @@ class taskLoadProcess extends abstractProcess
     public function run($arg)
     {
         //每20秒加载完一次任务后，生成1分钟后需要执行的任务
-        swoole_timer_tick(1 * 1000 , function (){
+        swoole_timer_tick(5 * 1000 , function (){
+            echo "加载任务...".PHP_EOL;
             $this->loadTask();
-            $tableTasks = TableManager::shareInstance()->getTable(task::TABLE_NAME_TASK);
-            foreach ($tableTasks as $taskId => $value) {
-            }
         });
     }
 
@@ -40,7 +38,7 @@ class taskLoadProcess extends abstractProcess
 
     private function loadTask()
     {
-        task::shareInstance()->syncTables($this->loadDb());
+        task::shareInstance()->loadTables($this->loadDb());
     }
 
     /**
@@ -65,11 +63,20 @@ class taskLoadProcess extends abstractProcess
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
-                "status" => 1 //暂停
+                "status" => 1 //激活
             ],
             [
                 "id"   => 3,
                 "rule" => "*/10 * * * *",
+                "excute_times" => 0,
+                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
+                "task_pre_time" => "",
+                "task_next_time" => "",
+                "status" => 3 //删除
+            ],
+            [
+                "id"   => 3,
+                "rule" => "* */10 * * *",
                 "excute_times" => 0,
                 "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
                 "task_pre_time" => "",

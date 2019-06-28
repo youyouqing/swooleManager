@@ -57,8 +57,11 @@ class command
                 $httpServer->on('WorkerStart', 'core\\server\\http::onWorkerStart');
                 $httpServer->on('pipeMessage', 'core\\server\\http::onPipeMessage');
                 ServerManager::shareInstance()->setSwooleServer($httpServer);
+                //加载任务
                 CronManager::shareInstance()->taskLoadProcess();
+                //同步一分钟之后执行的任务
                 CronManager::shareInstance()->taskAsyncProcess();
+                //执行任务
                 ServerManager::shareInstance()->getSwooleServer()->start();
                 break;
 

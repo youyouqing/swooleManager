@@ -4,6 +4,7 @@
 namespace core\process;
 
 use core\Di;
+use core\ServerManager;
 
 /**
  * 独立进程
@@ -22,8 +23,7 @@ class taskCleanProcess extends abstractProcess
 
     public function run($arg)
     {
-        echo __CLASS__.PHP_EOL;
-        print_r($arg);
+//         ServerManager::shareInstance()->getSwooleServer()->taskCo(["name"=>"dzc"]);
     }
 
     public function onReceive(string $str)

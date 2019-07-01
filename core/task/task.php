@@ -114,7 +114,6 @@ class task
                 $table->set($id, $value);
             }
         }
-        $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK,1);
         foreach ($table as $taskId => $value) {
             if (!isset($value['id'])) continue;
             if ($value['status'] != 1) {
@@ -146,6 +145,7 @@ class task
             if (!in_array($taskId , $runTaskIds)
                 and $value['task_next_exec_time']
                 and ($value['task_next_exec_time'] - time() <= 60)) {
+                $value['running'] = 1;
                 if ($run = $runTasks->get($value['id'])) {
                     !$run['running'] and $runTasks->set($value['id'], $value);
                 }else{
@@ -153,6 +153,12 @@ class task
                 }
             }
         }
+    }
+
+    public function getPushTasks()
+    {
+        $runTasks = TableManager::shareInstance()->getTable(self::TABLE_RUN_TASK);
+        return $runTasks;
     }
 
 }

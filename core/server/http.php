@@ -11,19 +11,80 @@ namespace core\server;
 
 use app\common\result;
 use core\CronManager;
+use core\Di;
 use core\loader;
+use core\ServerManager;
 
 class http
 {
+    //回调方法
+    const CALLBACK_REQUEST = "request";
+    const CALLBACK_WORKERSTART = "WorkerStart";
+    const CALLBACK_PIPEMESSAGE = "pipeMessage";
+    const CALLBACK_TASK = "Task";
 
-    static public function beforeRequest()
+    static $instance;
+    private $httpServer;
+    private $setting;
+
+    static public function shareInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new static();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * 服务配置初始化
+     * @param $configServer
+     */
+    public function httpInit($configServer)
+    {
+        $this->setting = $configServer;
+        $this->beforeRequest();
+        $this->httpServer = new \Swoole\Http\Server($this->setting['host'], $this->setting['port']);
+        $this->httpSetting($this->setting);
+        $this->httpCallback();
+        $this->afterRequest();
+        return $this->httpServer;
+    }
+
+    /**
+     * 服务启动
+     */
+    public function httpStart()
     {
 
     }
 
-    static public function afterRequest()
+    private function httpSetting($setting)
     {
+        $this->httpServer->set([
+            'document_root' => PUBLIC_PATH, // v4.4.0以下版本, 此处必须为绝对路径
+            'enable_static_handler' => true,
+            'pid_file' => PID_FILE,
+            'daemonize' => $setting['daemonize'],
+            'task_worker_num' => $setting['task_worker_num'],
+        ]);
+    }
 
+    public function httpCallback()
+    {
+        $this->httpServer->on(self::CALLBACK_REQUEST, 'core\\server\\http::onRequest');
+        $this->httpServer->on(self::CALLBACK_WORKERSTART, 'core\\server\\http::onWorkerStart');
+        $this->httpServer->on(self::CALLBACK_PIPEMESSAGE, 'core\\server\\http::onPipeMessage');
+        $this->httpServer->on(self::CALLBACK_TASK, 'core\\server\\http::onTask');
+    }
+
+    public function beforeRequest()
+    {
+        //TODO
+    }
+
+    public function afterRequest()
+    {
+        //TODO
     }
 
     static public function onRequest($request, $response)
@@ -59,15 +120,20 @@ class http
 
     static public function onWorkerStart($serv, $worker_id)
     {
-        if ($worker_id == 0) {
-            $serv->tick(1000, function ($id) use ($serv,$worker_id){
-                //TODO   热更新
-                //$serv->reload();
-//                echo $worker_id.PHP_EOL;
-
+        if ($worker_id == 2) {
+            swoole_timer_tick(1 * 1000 , function () use ($serv) {
+                CronManager::shareInstance()->sendTaskProcess($serv);
             });
         }
 
+
+//        if ($worker_id == 0) {
+//            $serv->tick(1000, function ($id) use ($serv,$worker_id){
+                //TODO   热更新
+                //$serv->reload();
+//                echo $worker_id.PHP_EOL;
+//            });
+//        }
     }
 
 
@@ -78,6 +144,17 @@ class http
         }
     }
 
+    static public function onTask($serv, $task_id, $worker_id, $data)
+    {
+//        echo "#{$serv->worker_id}\tonTask: worker_id={$worker_id}, task_id=$task_id\n";
+
+        if ($worker_id == 2) {
+//            $data = json_decode($data,true);
+            Di::shareInstance()->get("LOG")->log($data);
+//            print_r($data.PHP_EOL);
+            return $data;
+        }
+    }
 
     static public function getController($path_info)
     {

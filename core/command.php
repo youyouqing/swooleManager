@@ -9,6 +9,7 @@
 namespace core;
 
 use core\task\task;
+use core\server\http;
 
 class command
 {
@@ -42,33 +43,22 @@ class command
     {
         switch ($argv[2]) {
             case "start" :
-                $configServer = Di::shareInstance()->get(Di::DI_CONFIG.".server");
-
-                \core\server\http::beforeRequest();
-                $httpServer = new \Swoole\Http\Server($configServer['host'], $configServer['port']);
-
-                $httpServer->set([
-                    'document_root' => PUBLIC_PATH, // v4.4.0以下版本, 此处必须为绝对路径
-                    'enable_static_handler' => true,
-                    'pid_file' => PID_FILE,
-                    'daemonize' => $configServer['daemonize']
-                ]);
-                $httpServer->on('request', 'core\\server\\http::onRequest');
-                $httpServer->on('WorkerStart', 'core\\server\\http::onWorkerStart');
-                $httpServer->on('pipeMessage', 'core\\server\\http::onPipeMessage');
-                ServerManager::shareInstance()->setSwooleServer($httpServer);
+                //初始化http服务 并托管至Server管理器
+                ServerManager::shareInstance()->setSwooleServer(http::shareInstance()->httpInit(Di::shareInstance()->get(Di::DI_CONFIG.".server")));
                 //注册初始化内存表
                 TableManager::shareInstance()->initTables([task::TABLE_NAME_TASK,task::TABLE_RUN_TASK] , task::shareInstance()->getTablesRules());
-                //加载任务
-                CronManager::shareInstance()->taskLoadProcess();
-//                //同步一分钟之后执行的任务
-                CronManager::shareInstance()->taskAsyncProcess();
-//                //执行任务
-                CronManager::shareInstance()->taskRunProcess();
-
-
                 //启用主任务
                 ServerManager::shareInstance()->getSwooleServer()->start();
+
+
+
+//
+////                //同步一分钟之后执行的任务
+//                CronManager::shareInstance()->taskAsyncProcess();
+////                //执行任务
+//                CronManager::shareInstance()->taskRunProcess();
+
+
                 break;
 
 

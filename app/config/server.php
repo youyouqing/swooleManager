@@ -7,6 +7,7 @@ return [
     'enable_static_handler' => true,
     'pid_file' => PID_FILE,
     'daemonize' => false, //是否后台运行
+    'task_worker_num' => 8,
 
     'max_task_count' => 1000,//最大任务加载数
     'max_process_count' => 1000,//最大进程数

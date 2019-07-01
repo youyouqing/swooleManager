@@ -26,8 +26,7 @@ class taskAsyncProcess extends abstractProcess
 
     public function run($arg)
     {
-        swoole_timer_tick(2 * 1000, function (){
-            echo "同步任务...".PHP_EOL;
+        swoole_timer_tick(0.5 * 1000, function (){
             $this->prepareTask();
         });
 

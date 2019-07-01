@@ -1,6 +1,7 @@
 <?php
 namespace core;
 
+use Swoole\Exception;
 use Swoole\Table;
 
 class TableManager
@@ -22,22 +23,23 @@ class TableManager
     }
 
     /**
-     * 添加内存表
-     * @param $name
-     * @param array $columns
+     * 由于进程隔离  主服务吊起之前需要初始化需要创建的表空间
+     * @param array $tablenames
      * @param $size
      * @param float $conflict_proportion
-     * @return self
+     * @return mixed
      */
-    public function addTable($name , $columns = [] , $size , $conflict_proportion = 0.2)
+    public function initTables($tablenames = [] , $columns = [] , $size = 1024 , $conflict_proportion = 0.2)
     {
-        if (!isset($this->tables[$name])) {
-            $table = new Table($size,  $conflict_proportion);
-            foreach ($columns as $key => $value) {
-                $table->column($key , $value['type'] , $value['size']);
+        foreach ($tablenames as $tablename) {
+            if (!isset($this->tables[$tablename])) {
+                $table = new Table($size,  $conflict_proportion);
+                foreach ($columns as $key => $value) {
+                    $table->column($key , $value['type'] , $value['size']);
+                }
+                $table->create();
+                $this->tables[$tablename] = $table;
             }
-            $table->create();
-            $this->tables[$name] = $table;
         }
         return self::$instance;
     }

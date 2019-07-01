@@ -64,7 +64,6 @@ class http
                 //TODO   热更新
                 //$serv->reload();
 //                echo $worker_id.PHP_EOL;
-                CronManager::shareInstance()->taskRunProcess();
 
             });
         }

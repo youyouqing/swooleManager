@@ -38,7 +38,6 @@ class CronManager
      */
     public function taskLoadProcess()
     {
-
         $taskLoadProcess = new taskLoadProcess("php-taskLoadProcess");
         $this->collectionProcess($taskLoadProcess->getProcess());
     }
@@ -51,15 +50,8 @@ class CronManager
      */
     public function taskRunProcess()
     {
-        $runTasks = TableManager::shareInstance()->getTable(\core\task\task::TABLE_RUN_TASK);
-        print_r($runTasks);
-        echo "run任务";
-        if (is_array($runTasks)) {
-            foreach ($runTasks as $taskId => $value) {
-                $taskRunProcess = new taskRunProcess("php-runTaskProcess-".$taskId,$value);
-                $this->collectionProcess($taskRunProcess->getProcess());
-            }
-        }
+        $taskRunProcess = new taskRunProcess("php-runTaskProcess-");
+        $this->collectionProcess($taskRunProcess->getProcess());
     }
 
     /**

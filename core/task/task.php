@@ -67,6 +67,10 @@ class task
                 'type' => TableManager::TYPE_STRING,
                 'size' => 255,
             ],
+            'running' => [
+                'type' => TableManager::TYPE_INT,
+                'size' => 4,
+            ],
             'status'   => [
                 'type' => TableManager::TYPE_INT,
                 'size' => 4,
@@ -104,14 +108,15 @@ class task
      */
     public function loadTables($tasks)
     {
-        $table = TableManager::shareInstance()->addTable(self::TABLE_NAME_TASK , self::getTablesRules() , 1024);
+        $table = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
         foreach ($tasks as $id => $value) {
             if ($table) {
-                $table->setTable(self::TABLE_NAME_TASK , $id, $value);
+                $table->set($id, $value);
             }
         }
-        $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
-        foreach ($tableTasks as $taskId => $value) {
+        $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK,1);
+        foreach ($table as $taskId => $value) {
+            if (!isset($value['id'])) continue;
             if ($value['status'] != 1) {
                 continue;
             }
@@ -122,9 +127,7 @@ class task
             $value['task_pre_time'] = $task_pre_time;
             $value['task_next_exec_time'] = CronExpression::factory($value['rule'])->getNextRunDate()->getTimestamp();
             $value['task_pre_exec_time'] = CronExpression::factory($value['rule'])->getPreviousRunDate()->getTimestamp();
-            TableManager::shareInstance()->setTable(self::TABLE_NAME_TASK , $taskId, $value);
-            $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
-            print_r($tableTasks);
+            $table->set($taskId, $value);
         }
     }
 
@@ -133,18 +136,20 @@ class task
      */
     public function prepareTables()
     {
-        $runTasksTables = TableManager::shareInstance()->addTable(self::TABLE_RUN_TASK , self::getTablesRules() , 1024);
         $tableTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
-        print_r($tableTasks);
-        print_r(1111);
         $runTasks = TableManager::shareInstance()->getTable(self::TABLE_RUN_TASK);
-        if (!is_array($runTasks)) return;
-        $runTasks = array_keys($runTasks) ?? [];
-        if ($tableTasks) {
-            foreach ($tableTasks as $taskId => $value) {
-                print_r($value);
-                if (!in_array($taskId , $runTasks) and $value['task_next_exec_time'] and ($value['task_next_exec_time'] - time() <= 60)) {
-                    $runTasksTables->setTable(self::TABLE_RUN_TASK , $value['id'], $value);
+        $runTaskIds = [];
+        foreach ($runTasks as $runTask) {
+            $runTaskIds[] = $runTask["id"];
+        }
+        foreach ($tableTasks as $taskId => $value) {
+            if (!in_array($taskId , $runTaskIds)
+                and $value['task_next_exec_time']
+                and ($value['task_next_exec_time'] - time() <= 60)) {
+                if ($run = $runTasks->get($value['id'])) {
+                    !$run['running'] and $runTasks->set($value['id'], $value);
+                }else{
+                    $runTasks->set($value['id'], $value);
                 }
             }
         }

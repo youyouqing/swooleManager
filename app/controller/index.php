@@ -12,13 +12,13 @@ class index extends base
 
     public function testCrontime()
     {
-        $cron = CronExpression::factory('30 9 * * *');
-        $next = $cron->getNextRunDate()->format("Y-m-d H:i:s");
-        $pre = $cron->getPreviousRunDate()->format("Y-m-d H:i:s");
+        $task_next_time = CronExpression::factory("*/30 * * * *")->getNextRunDate()->format("Y-m-d H:i:s");
+        $task_pre_time = CronExpression::factory("*/30 * * * *")->getPreviousRunDate()->format("Y-m-d H:i:s");
+
         return $this->resultJson(0,[
-            'next'=>$next,
-            'pre'=>$pre,
-            'is_due'=>$cron->isDue()
+            'next'=>$task_next_time,
+            'pre'=>$task_pre_time,
+            'is_due'=>1111
         ],'');
 
     }

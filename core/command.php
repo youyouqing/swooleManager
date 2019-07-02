@@ -18,10 +18,14 @@ class command
     {
     }
 
+    /**
+     * 命令行处理方法
+     * @param $argv
+     */
     static public function handle($argv)
     {
         if (empty($argv) || count($argv) < 3) {
-            exit("命令行格式不正确");
+            self::help();
         }
         switch ($argv[1]) {
             case "http":
@@ -31,7 +35,7 @@ class command
             case "tcp":
             case "websocket":
             default:
-                exit("目前只支持http");
+                self::help();
         }
     }
 
@@ -50,31 +54,33 @@ class command
                 //启用主任务
                 ServerManager::shareInstance()->getSwooleServer()->start();
 
-
-
-//
-////                //同步一分钟之后执行的任务
-//                CronManager::shareInstance()->taskAsyncProcess();
-////                //执行任务
-//                CronManager::shareInstance()->taskRunProcess();
-
-
                 break;
 
 
             case "reload" :
-                //TODO 后续做服务重启
                 $httpServer = ServerManager::shareInstance()->getSwooleServer();
                 if (!$httpServer) {
                     die("服务不存在");
                 }
-
                 $httpServer->reload();
                 break;
             default:
-                die("参数错误");
+                self::help();
                 break;
         }
 
     }
+
+    static public function help()
+    {
+        echo <<<HELP
+        
+-----------------------------------------------      
+|目前只支持http服务                            |
+|服务启动命令：php app/index.php http start    |
+|服务重载命令：php app/index.php http reload   |
+-----------------------------------------------  
+
+HELP;
+    exit();}
 }

@@ -134,10 +134,10 @@ class http
 
         if ($worker_id == 0) {
             //10秒热更新
-            $serv->tick(10 * 1000, function ($id) use ($serv,$worker_id){
-                //TODO   热更新
-                $serv->reload();
-            });
+//            $serv->tick(10 * 1000, function ($id) use ($serv,$worker_id){
+//                //TODO   热更新
+//                $serv->reload();
+//            });
         }
     }
 

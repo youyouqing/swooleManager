@@ -29,10 +29,10 @@ require_once CORE_PATH . "/loader.php";
 
 
 // 加载并注入mysqli
-//\core\loader::initDatabases();
+\core\loader::initDatabases();
 
 // 加载并注入redis
-//\core\loader::initRedis();
+\core\loader::initRedis();
 
 // 加载composer
 \core\loader::includeComposer();

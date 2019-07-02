@@ -1,5 +1,5 @@
 # swooleManager
-swooleManager   timer task
+swooleManager   基于swoole4.X的秒级定时任务管理系统
 
 查看swoole 版本方式：
 ```bash
@@ -10,12 +10,18 @@ php --ri swoole
 # Version => 4.x
 ```
 
+docker环境镜像(独立php环境)
+```
+docker pull zhicongdai/qnphp
+```
 
 启动http服务：
 ```bash
-composer config -g repo.packagist composer https://packagist.phpcomposer.com
-composer install
-cd app && php index.php http start
+安装方式  
+1 git clone https://github.com/youyouqing/swooleManager.git
+2 composer config -g repo.packagist composer https://packagist.phpcomposer.com
+3 composer install
+4 php app/index.php http start
 ```
 
 

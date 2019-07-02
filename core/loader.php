@@ -49,6 +49,7 @@ class loader
         $arr = [];
         self::getCorePath($dirpath, $arr);
         foreach ($arr as $path) {
+            if (strpos($path ,".php") === false) continue;
             $fileName = pathinfo($path)["filename"];
             Di::shareInstance()->set(Di::DI_CONFIG.".{$fileName}", include_once $path);
         }

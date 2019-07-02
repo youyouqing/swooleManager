@@ -13,6 +13,7 @@ use core\process\taskCleanProcess;
 use core\process\taskLoadProcess;
 use core\process\taskRunProcess;
 use core\task\task;
+use Cron\CronExpression;
 
 /**
  * 定时任务管理
@@ -38,16 +39,7 @@ class CronManager
      */
     public function sendTaskProcess($serv)
     {
-        task::shareInstance()->loadTables($this->loadDb());
-        task::shareInstance()->prepareTables();
-        $tasks = task::shareInstance()->getPushTasks();
-        foreach ($tasks as $taskId => $item) {
-
-            $serv->taskCo([
-                0 => $item
-            ], 0.5);
-            return;
-        }
+        task::shareInstance()->loadTables($this->loadDb() , $serv);
     }
 
     /**
@@ -112,40 +104,44 @@ class CronManager
     {
         $taskList = [
             [
+                //每隔10秒
                 "id"   => 1,
-                "rule" => "*/10 * * * * *",
+                "rule" => "*/5 * * * * *",
                 "excute_times" => 0,
-                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/atestt.php",
+                "cmd" => "php -f /home/git/swooleManager/test1.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
                 "running" => 0,
                 "status" => 1 //激活
             ],
             [
+                //每隔6秒
                 "id"   => 2,
                 "rule" => "*/10 * * * * *",
                 "excute_times" => 0,
-                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
+                "cmd" => "php -f /home/git/swooleManager/test2.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
                 "running" => 0,
                 "status" => 1 //激活
             ],
             [
+                //每隔6秒
                 "id"   => 3,
-                "rule" => "0/15 * * * *",
+                "rule" => "*/15 * * * * *",
                 "excute_times" => 0,
-                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
+                "cmd" => "php -f /home/git/swooleManager/test3.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
                 "running" => 0,
-                "status" => 1 //删除
+                "status" => 1 //激活
             ],
             [
+                //每隔30秒
                 "id"   => 4,
-                "rule" => "*/30 * * * *",
+                "rule" => "*/20 * * * *",
                 "excute_times" => 0,
-                "cmd" => "usr/bin/php -f /home/docker-project/www/html/swooleManager/test1.php",
+                "cmd" => "php -f /home/git/swooleManager/test4.php",
                 "task_pre_time" => "",
                 "task_next_time" => "",
                 "running" => 0,

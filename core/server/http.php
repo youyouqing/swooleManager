@@ -14,6 +14,9 @@ use core\CronManager;
 use core\Di;
 use core\loader;
 use core\ServerManager;
+use core\TableManager;
+use core\task\task;
+use Cron\CronExpression;
 
 class http
 {
@@ -21,7 +24,8 @@ class http
     const CALLBACK_REQUEST = "request";
     const CALLBACK_WORKERSTART = "WorkerStart";
     const CALLBACK_PIPEMESSAGE = "pipeMessage";
-    const CALLBACK_TASK = "Task";
+    const CALLBACK_TASK = "task";
+    const CALLBACK_FINISH = "finish";
 
     static $instance;
     private $httpServer;
@@ -66,6 +70,7 @@ class http
             'pid_file' => PID_FILE,
             'daemonize' => $setting['daemonize'],
             'task_worker_num' => $setting['task_worker_num'],
+            'task_enable_coroutine' => $setting['task_enable_coroutine'],
         ]);
     }
 
@@ -75,6 +80,7 @@ class http
         $this->httpServer->on(self::CALLBACK_WORKERSTART, 'core\\server\\http::onWorkerStart');
         $this->httpServer->on(self::CALLBACK_PIPEMESSAGE, 'core\\server\\http::onPipeMessage');
         $this->httpServer->on(self::CALLBACK_TASK, 'core\\server\\http::onTask');
+        $this->httpServer->on(self::CALLBACK_FINISH, 'core\\server\\http::onFinish');
     }
 
     public function beforeRequest()
@@ -126,14 +132,18 @@ class http
             });
         }
 
-
-//        if ($worker_id == 0) {
-//            $serv->tick(1000, function ($id) use ($serv,$worker_id){
+        if ($worker_id == 0) {
+            //10秒热更新
+            $serv->tick(10 * 1000, function ($id) use ($serv,$worker_id){
                 //TODO   热更新
-                //$serv->reload();
-//                echo $worker_id.PHP_EOL;
-//            });
-//        }
+                $serv->reload();
+            });
+        }
+    }
+
+    static public function onFinish(woole_server $serv, int $task_id, string $data)
+    {
+
     }
 
 
@@ -144,16 +154,23 @@ class http
         }
     }
 
-    static public function onTask($serv, $task_id, $worker_id, $data)
+    static public function onTask($serv, $data)
     {
-//        echo "#{$serv->worker_id}\tonTask: worker_id={$worker_id}, task_id=$task_id\n";
-
-        if ($worker_id == 2) {
-//            $data = json_decode($data,true);
-            Di::shareInstance()->get("LOG")->log($data);
-//            print_r($data.PHP_EOL);
-            return $data;
-        }
+        $data = json_decode($data->data,true);
+            swoole_timer_after(($data['task_next_exec_time']- time()) * 1000 , function () use ($data){
+                go(function () use ($data){
+                    $cronInstance = CronExpression::factory($data['rule']);
+                    TableManager::shareInstance()
+                        ->getTable(task::TABLE_NAME_TASK)
+                        ->set($data['id'] , [
+                            'task_next_exec_time' => $cronInstance->getNextRunDate()->getTimestamp(),
+                            'task_next_time' => $cronInstance->getNextRunDate()->format("Y-m-d H:i:s"),
+                            'running' => 0
+                        ]);
+                    $res = \co::exec($data['cmd']);
+                    Di::shareInstance()->get("LOG")->log("任务".$data['id'].":执行结果=>".$res['output']."执行时间：".date("Y-m-d H:i:s"));
+                });
+            });
     }
 
     static public function getController($path_info)

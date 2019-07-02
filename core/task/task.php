@@ -106,27 +106,31 @@ class task
      * 只读mysql表
      * 同步内存表
      */
-    public function loadTables($tasks)
+    public function loadTables($tasks , $serv)
     {
         $table = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
-        foreach ($tasks as $id => $value) {
-            if ($table) {
-                $table->set($id, $value);
-            }
+        $tableIds = [];
+        foreach ($table as $k=> $v) {
+            $tableIds[] = $k;
         }
-        foreach ($table as $taskId => $value) {
-            if (!isset($value['id'])) continue;
-            if ($value['status'] != 1) {
-                continue;
+        foreach ($tasks as $id => $value) {
+            if ($table //内存表实例存在
+                and $value['status'] == 1 //任务状态是激活
+            ) {
+                if (isset($value['task_next_exec_time'])
+                    and ($value['task_next_exec_time'] - time() > 10 or $value['task_next_exec_time'] - time() < 0)){
+                    continue;
+                }
+
+                $cronInstance = CronExpression::factory($value['rule']);
+                $value['task_next_exec_time'] = $cronInstance->getNextRunDate()->getTimestamp();
+                if ($value['task_next_exec_time'] - time() > 1) continue;//抛弃下次执行时间超过10秒的任务
+                $value['task_next_time'] = $cronInstance->getNextRunDate()->format("Y-m-d H:i:s");
+                $value['task_pre_time'] = $cronInstance->getPreviousRunDate()->format("Y-m-d H:i:s");
+                $value['task_pre_exec_time'] = $cronInstance->getPreviousRunDate()->getTimestamp();
+                //投递任务
+                $serv->task(json_encode($value), 1);
             }
-            // 及时修改状态和时间   需要同步内存表
-            $task_next_time = CronExpression::factory($value['rule'])->getNextRunDate()->format("Y-m-d H:i:s");
-            $task_pre_time = CronExpression::factory($value['rule'])->getPreviousRunDate()->format("Y-m-d H:i:s");
-            $value['task_next_time'] = $task_next_time;
-            $value['task_pre_time'] = $task_pre_time;
-            $value['task_next_exec_time'] = CronExpression::factory($value['rule'])->getNextRunDate()->getTimestamp();
-            $value['task_pre_exec_time'] = CronExpression::factory($value['rule'])->getPreviousRunDate()->getTimestamp();
-            $table->set($taskId, $value);
         }
     }
 
@@ -143,8 +147,8 @@ class task
         }
         foreach ($tableTasks as $taskId => $value) {
             if (!in_array($taskId , $runTaskIds)
-                and $value['task_next_exec_time']
-                and ($value['task_next_exec_time'] - time() <= 60)) {
+                and $value['task_next_exec_time']) {
+                //加入标示
                 $value['running'] = 1;
                 if ($run = $runTasks->get($value['id'])) {
                     !$run['running'] and $runTasks->set($value['id'], $value);
@@ -157,8 +161,7 @@ class task
 
     public function getPushTasks()
     {
-        $runTasks = TableManager::shareInstance()->getTable(self::TABLE_RUN_TASK);
+        $runTasks = TableManager::shareInstance()->getTable(self::TABLE_NAME_TASK);
         return $runTasks;
     }
-
 }

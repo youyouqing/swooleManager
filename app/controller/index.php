@@ -12,8 +12,8 @@ class index extends base
 
     public function testCrontime()
     {
-        $task_next_time = CronExpression::factory("*/30 * * * *")->getNextRunDate()->format("Y-m-d H:i:s");
-        $task_pre_time = CronExpression::factory("*/30 * * * *")->getPreviousRunDate()->format("Y-m-d H:i:s");
+        $task_next_time = CronExpression::factory("*/15 * * * * *")->getNextRunDate()->format("Y-m-d H:i:s");
+        $task_pre_time = CronExpression::factory("*/15 * * * * *")->getPreviousRunDate()->format("Y-m-d H:i:s");
 
         return $this->resultJson(0,[
             'next'=>$task_next_time,

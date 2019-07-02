@@ -34,7 +34,7 @@ class taskLoadProcess extends abstractProcess
 
     private function loadTask()
     {
-        task::shareInstance()->loadTables($this->loadDb());
+//        task::shareInstance()->loadTables($this->loadDb());
     }
 
     /**

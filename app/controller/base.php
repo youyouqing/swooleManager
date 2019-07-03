@@ -11,10 +11,13 @@ namespace app\controller;
 
 use app\common\result;
 use core\Di;
-use core\http;
+use core\server\http;
 
 class base
 {
+    //token 两小时有效期
+    const TOKEN_AUTH_EXPIRE = 3600 * 2;
+
     public $request;
     public $response;
     public $custome;
@@ -60,7 +63,7 @@ class base
             if (empty($token)) {
                 return $this->tokenError("token不能为空");
             }
-            $userId = Di::shareInstance()->get("REDIS")->get('token|'.$token);
+            $userId = Di::shareInstance()->get(Di::DI_REDIS)->get('token|'.$token);
             $userRes = \app\model\user::where(['id' => $userId])->find();
             if (empty($userRes)) {
                 return $this->tokenError("token非法");
@@ -68,6 +71,7 @@ class base
             if ($userRes['status'] != 1) {
                 return $this->tokenError("用户被冻结");
             }
+            Di::shareInstance()->get(Di::DI_REDIS)->expire('token|'.$token,self::TOKEN_AUTH_EXPIRE);
             $this->user = $userRes;
         }
     }
@@ -75,6 +79,11 @@ class base
     private function tokenError($msg)
     {
         return http::responseHandle($this->response , $this->resultJson( -10 , false , $msg));
+    }
+
+    private function fieldError($msg)
+    {
+        return http::responseHandle($this->response , $this->resultJson( -2 , false , $msg."必传"));
     }
 
     /**
@@ -99,22 +108,22 @@ class base
 
     public function getServer($key = false)
     {
-        return $key ? $this->request->server[$key] : $this->request->server;
+        return $key ? (isset($this->request->server[$key]) ? $this->request->server[$key] : false) : $this->request->server;
     }
 
     public function getHeader($key = false)
     {
-        return $key ? $this->request->header[$key] : $this->request->header;
+        return $key ? ($this->request->header[$key] ? $this->request->header[$key] : false) : $this->request->header;
     }
 
     public function getRequestGet($key = false)
     {
-        return $key ? $this->request->get[$key] : $this->request->get;
+        return $key ? (isset($this->request->get[$key]) ? $this->request->get[$key] : false ) : $this->request->get;
     }
 
     public function getRequestPost($key = false)
     {
-        return $key ? $this->request->post[$key] : $this->request->post;
+        return $key ? (isset($this->request->post[$key]) ? $this->request->post[$key] : false ) : $this->request->post;
     }
 
     public function getParams($key = false)
@@ -191,6 +200,14 @@ class base
     public function getUserAgent()
     {
         return $this->getServer('user-agent');
+    }
+
+    public function filterRequestFields($requestFields = []) : array
+    {
+        foreach ($requestFields as $field) {
+            !$this->serverParams($field) and $this->fieldError($field);
+        }
+        return $this->serverParams();
     }
 
 

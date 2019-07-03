@@ -19,8 +19,7 @@ use app\model\user as userModel;
 class user extends base
 {
     protected $need_token = false;
-    //token 两小时有效期
-    const TOKEN_AUTH_EXPIRE = 3600 * 2;
+
     public $model = null;
 
     public function init()
@@ -34,10 +33,15 @@ class user extends base
      */
     public function register()
     {
+        $requireFields = [
+            "user_name",
+            "password",
+        ];
+        $this->filterRequestFields($requireFields);
         $existRes = userModel::where([
             "user_name" => $this->serverParams('user_name'),
             "status"    => 1,//激活用户
-        ])->count();
+        ])->find();
         if ($existRes) {
             return $this->resultJson(-1,false,$this->serverParams('user_name')."已存在");
         }
@@ -77,7 +81,9 @@ class user extends base
             return $this->resultJson(-1,false,"账号被冻结");
         }
         $token = md5($existRes['user_name'].time());
-        Di::shareInstance()->get("REDIS")->set('token|'.$token,$existRes['id'],self::TOKEN_AUTH_EXPIRE);
+        $redisKey = 'token|'.$token;
+        Di::shareInstance()->get(Di::DI_REDIS)->set($redisKey,$existRes['id']);
+        Di::shareInstance()->get(Di::DI_REDIS)->expire($redisKey,self::TOKEN_AUTH_EXPIRE);
         return $this->resultJson(0, [
             "token" => $token
         ],"OK");
@@ -89,13 +95,8 @@ class user extends base
      */
     public function logout()
     {
-        Di::shareInstance()->get("REDIS")->rm('token|'.$this->token);
+        Di::shareInstance()->get("REDIS")->del('token|'.$this->token);
         return $this->resultJson(0, true,"登出成功");
-    }
-
-    public function index()
-    {
-        Di::shareInstance()->get("LOG")->log("哈哈哈");
     }
 
 }

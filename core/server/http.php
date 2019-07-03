@@ -134,10 +134,10 @@ class http
 
         if ($worker_id == 0) {
             //10秒热更新
-//            $serv->tick(10 * 1000, function ($id) use ($serv,$worker_id){
-//                //TODO   热更新
+            $serv->tick(1 * 1000, function ($id) use ($serv,$worker_id){
+                //TODO   热更新
 //                $serv->reload();
-//            });
+            });
         }
     }
 
@@ -194,6 +194,6 @@ class http
     static public function responseHandle($response,$result)
     {
         $response->header('content-type', 'application/json; charset=utf-8', true);
-        $response->end(json_encode((array)$result,JSON_UNESCAPED_UNICODE));
+        return $response->end(json_encode((array)$result,JSON_UNESCAPED_UNICODE));
     }
 }

@@ -11,5 +11,5 @@ namespace app\model;
 
 class user extends base
 {
-    protected $name = 'user';
+    protected $name = 't_user';
 }

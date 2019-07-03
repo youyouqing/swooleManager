@@ -11,7 +11,7 @@ namespace app\model;
 
 class taskGroup extends base
 {
-    protected $name = 'task_group';
+    protected $name = 't_task_group';
 
     public function getDataByName($groupName)
     {

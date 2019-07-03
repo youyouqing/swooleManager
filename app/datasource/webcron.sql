@@ -26,6 +26,7 @@ CREATE TABLE `t_task_group` (
   `group_name` varchar(50) NOT NULL DEFAULT '' COMMENT '组名',
   `description` varchar(255) NOT NULL DEFAULT '' COMMENT '说明',
   `create_time` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) NOT NULL DEFAULT '0' COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

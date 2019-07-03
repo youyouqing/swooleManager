@@ -16,17 +16,6 @@ class taskGroup extends base
     public function init()
     {
         $this->model = new \app\model\taskGroup();
-        /**
-         * CREATE TABLE `t_task_group` (
-        `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-        `user_id` int(11) NOT NULL DEFAULT '0' COMMENT '用户ID',
-        `group_name` varchar(50) NOT NULL DEFAULT '' COMMENT '组名',
-        `description` varchar(255) NOT NULL DEFAULT '' COMMENT '说明',
-        `create_time` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
-        PRIMARY KEY (`id`),
-        KEY `idx_user_id` (`user_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-         */
     }
 
     /**
@@ -34,7 +23,18 @@ class taskGroup extends base
      */
     public function add()
     {
-
+        $params = $this->filterRequestFields(["group_name"]);
+        $exist = $this->model->where(["group_name" => $params['group_name']])->find();
+        if ($exist) {
+            return $this->resultJson(-1,false,$params['group_name']."已经存在");
+        }
+        $res = $this->model->insert([
+            "group_name" => $params['group_name'],
+            "create_time" => time(),
+            "user_id" => $this->user["id"],
+            "description" => $params['description'] ?? ""
+        ]);
+        return $this->resultJson($res ? 0 : -1,$res,$res ? "添加成功":"添加失败");
     }
 
 
@@ -43,7 +43,16 @@ class taskGroup extends base
      */
     public function delete()
     {
-
+        $params = $this->filterRequestFields(["group_id"]);
+        $exist = $this->model->where(["id" => $params['group_id']])->find();
+        if (!$exist) {
+            return $this->resultJson(-1, false, "分组不存在");
+        }
+        if ($this->user['id'] != $exist['user_id']) {
+            return $this->resultJson(-1, false, "您没有权限删除该分组");
+        }
+        $res = $this->model->where(["id" => $params['group_id']])->delete();
+        return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "删除成功" : "删除失败");
     }
 
 
@@ -52,7 +61,20 @@ class taskGroup extends base
      */
     public function edit()
     {
-
+        $params = $this->filterRequestFields(["group_id"]);
+        $exist = $this->model->where(["id" => $params['group_id']])->find();
+        if (!$exist) {
+            return $this->resultJson(-1, false, "分组不存在");
+        }
+        if ($this->user['id'] != $exist['user_id']) {
+            return $this->resultJson(-1, false, "您没有权限编辑该分组");
+        }
+        $res = $this->model->where(["id" => $params['group_id']])->save([
+            "group_name" => $params['group_name'],
+            "description" => $params['description'],
+            "update_time" => time(),
+        ]);
+        return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "修改成功" : "修改失败或者无需修改");
     }
 
     /**
@@ -66,9 +88,10 @@ class taskGroup extends base
     /**
      * 任务组列表
      */
-    public function lists()
+    public function list()
     {
-
+        $res = $this->model->select();
+        return $this->resultJson(0, $res, "");
     }
 
 }

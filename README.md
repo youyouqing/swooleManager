@@ -20,12 +20,25 @@ docker pull zhicongdai/qnphp
 安装方式  
 1 git clone https://github.com/youyouqing/swooleManager.git
 2 composer config -g repo.packagist composer https://packagist.phpcomposer.com
-3 composer install
-4 php app/index.php http start
+3 cd swooleManager &&  composer install
+4 导入app/datasource/webcron.sql到你mysql中
+5 覆盖源码配置项 vendor/topthink/think-orm/src/config.php
+    'type'            => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["type"] ?? "mysql",
+    // 服务器地址
+    'hostname'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["hostname"] ?? "172.20.199.4",
+    // 数据库名
+    'database'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["database"] ?? "webcron",
+    // 用户名
+    'username'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["username"] ?? "root",
+    // 密码
+    'password'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["password"] ?? "qingniu123",
+    // 端口
+    'hostport'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["hostport"] ?? "3306",
+6 启动项目 php app/index.php http start
 ```
 
 
 
 TODO
-- [ ] 热更新 （使用md5_file()）  代码写在core/server/http.php:58
-- [ ] 秒级cron定时器  新建vendor/dragonmantank/cron-expression/src/Cron/SecondField.php逻辑处理
+- [ ] web接口
+- [ ] docker项目一键集成

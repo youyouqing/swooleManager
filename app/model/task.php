@@ -11,5 +11,5 @@ namespace app\model;
 
 class task extends base
 {
-    protected $name = 'task';
+    protected $name = 't_task';
 }

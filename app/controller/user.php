@@ -33,11 +33,7 @@ class user extends base
      */
     public function register()
     {
-        $requireFields = [
-            "user_name",
-            "password",
-        ];
-        $this->filterRequestFields($requireFields);
+        $this->filterRequestFields(["user_name", "password",]);
         $existRes = userModel::where([
             "user_name" => $this->serverParams('user_name'),
             "status"    => 1,//激活用户

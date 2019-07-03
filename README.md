@@ -31,7 +31,7 @@ docker pull zhicongdai/qnphp
     // 用户名
     'username'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["username"] ?? "root",
     // 密码
-    'password'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["password"] ?? "qingniu123",
+    'password'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["password"] ?? "zhicongdai",
     // 端口
     'hostport'        => Di::shareInstance()->get(Di::DI_CONFIG.".databases")["hostport"] ?? "3306",
 6 启动项目 php app/index.php http start

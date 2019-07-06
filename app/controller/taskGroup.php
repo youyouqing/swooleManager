@@ -88,7 +88,7 @@ class taskGroup extends base
     /**
      * 任务组列表
      */
-    public function list()
+    public function lists()
     {
         $res = $this->model->select();
         return $this->resultJson(0, $res, "");

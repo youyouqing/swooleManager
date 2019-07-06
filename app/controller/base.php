@@ -202,6 +202,11 @@ class base
         return $this->getServer('user-agent');
     }
 
+    /**
+     * 过滤必要参数
+     * @param array $requestFields
+     * @return array 返回所有参数
+     */
     public function filterRequestFields($requestFields = []) : array
     {
         foreach ($requestFields as $field) {

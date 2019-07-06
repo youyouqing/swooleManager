@@ -14,10 +14,9 @@ class task extends base
 {
     protected $need_token = false;
     private $model = null;
-    private $err_result = false;
     private $handleMap = [
-        "start",
-        "stop"
+        "0" => "暂停",
+        "1" => "开始",
     ];
 
     public function init()
@@ -30,7 +29,25 @@ class task extends base
      */
     public function add()
     {
-
+        $params = $this->filterRequestFields(["rule","cmd","status","group_id","task_name","description","cron_spec","timeout"]);
+        $res = $this->model->where([
+            "group_id" => $params['group_id'],
+            "task_name" => $params['task_name'],
+        ])->find();
+        if ($res) {
+            $this->resultJson(-1,false,"该组存在同名任务");
+        }
+        $res = $this->model->insert([
+            "group_id" => $params['group_id'],//任务组
+            "user_id" => $this->user->id,//用户id
+            "create_time" => time(),//创建时间
+            "rule" => $params['rule'],//cron表达式
+            "cmd" => $params['cmd'],//命令
+            "status" => $params['status'],//状态 0暂停  1 开始 默认暂停
+            "task_name" => $params['task_name'],//任务名称
+            "timeout" => $params['timeout'],//超时时间
+        ]);
+        return $this->resultJson($res ? 0 : -1,$res,$res ? "添加成功":"添加失败");
     }
 
 
@@ -39,7 +56,16 @@ class task extends base
      */
     public function delete()
     {
-
+        $params = $this->filterRequestFields(["id"]);
+        $taskRes = $this->model->where(["id"=>$params['id']])->find();
+        if (!$taskRes) {
+            $this->resultJson(-1,false,"任务不存在");
+        }
+        if ($taskRes['user_id'] != $this->user->id) {
+            $this->resultJson(-1,false,"没有权限删除非本人创建的任务");
+        }
+        $res = $this->model->where(["id" => $params['id']])->delete();
+        return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "删除成功" : "删除失败");
     }
 
 
@@ -48,7 +74,25 @@ class task extends base
      */
     public function edit()
     {
-
+        $params = $this->filterRequestFields(["id","rule","cmd","status","group_id","task_name","description","cron_spec","timeout"]);
+        $taskRes = $this->model->where(["id"=>$params['id']])->find();
+        if (!$taskRes) {
+            $this->resultJson(-1,false,"任务不存在");
+        }
+        if ($taskRes['user_id'] != $this->user->id) {
+            $this->resultJson(-1,false,"没有权限编辑非本人创建的任务");
+        }
+        $res = $this->model->where(["id"=>$params['id']])->save([
+            "update_time" => time(),//更新时间
+            "group_id" => $params['group_id'],//任务组
+            "user_id" => $this->user->id,//用户id
+            "rule" => $params['rule'],//cron表达式
+            "cmd" => $params['cmd'],//命令
+            "status" => $params['status'],//状态 0暂停  1 开始 默认暂停
+            "task_name" => $params['task_name'],//任务名称
+            "timeout" => $params['timeout'],//超时时间
+        ]);
+        return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "修改成功" : "修改失败或者无需修改");
     }
 
     /**
@@ -56,54 +100,29 @@ class task extends base
      */
     public function handleTask()
     {
-        $handle_type = $this->serverParams("handle_type");
-        if (!in_array($handle_type , $this->handleMap)) {
-            return $this->resultJson(-1,false,"不存在的操作类型");
-        }
-        $taskRes = $this->checkTask($this->serverParams('task_id') , $handle_type);
+        $params = $this->filterRequestFields(["id","status"]);
+        $taskRes = $this->model->where(["id"=>$params['id']])->find();
         if (!$taskRes) {
-            return $this->err_result;
+            $this->resultJson(-1,false,"任务不存在");
         }
-        switch ($handle_type) {
-            case $this->handleMap[0]:
-                //开启 进程处理
-//                go(function () {
-//                    echo 111111;
-//                });
-                (new processtask("php:task-process" , $taskRes , false));
-                break;
-            case $this->handleMap[1]:
-                //关闭  进程处理
-
-                break;
-                default;
+        if ($taskRes['user_id'] != $this->user->id) {
+            $this->resultJson(-1,false,"没有权限操作非本人创建的任务");
         }
+        if ($params['status'] == $taskRes['status']) {
+            return $this->resultJson(-1,false,"任务已是".$this->handleMap[$params['status']]."无需修改");
+        }
+        $res = $this->model->where(["id"=>$params['id']])->save(["status"=>$params["status"]]);
+        return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "修改成功" : "修改失败或者无需修改");
     }
 
-    private function checkTask($taskId , $handle_type = false)
+    /**
+     * 任务列表
+     */
+    public function lists()
     {
-        if (empty($taskId) or !is_numeric($taskId)) {
-            $this->err_result = $this->resultJson(-1,false,"任务id格式不正确");
-            return false;
-        }
-        $taskRes = \app\model\task::where([
-            "id" => $taskId,
-        ])->find();
-        if (!$taskRes) {
-            $this->err_result = $this->resultJson(-1,false,"该任务不存在");
-            return false;
-        }
-        if (($this->handleMap[0] == $handle_type) and (1 == $taskRes['status'])){
-            $this->err_result = $this->resultJson(-1,false,"该任务已经开启，不允许重复开启");
-            return false;
-        }
-        if (($this->handleMap[1] == $handle_type) and (0 == $taskRes['status'])){
-            $this->err_result = $this->resultJson(-1,false,"该任务已经关闭，不允许重复关闭");
-            return false;
-        }
-        return $taskRes;
-    }
+        $params = $this->filterRequestFields(["start_time","end_time","group_id"]);
 
+    }
 
 
 

@@ -48,7 +48,7 @@ class base
 
     public function handle_token()
     {
-        $token = $this->serverParams('token');
+        $token = $this->getHeader('token');
         $controller = $this->custome['controller'];
         $method = $this->custome['method'];
         $this->token = $token;

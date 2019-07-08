@@ -8,11 +8,8 @@
 
 namespace app\controller;
 
-use app\process\processtask;
-
 class task extends base
 {
-    protected $need_token = false;
     private $model = null;
     private $handleMap = [
         "0" => "暂停",
@@ -29,7 +26,7 @@ class task extends base
      */
     public function add()
     {
-        $params = $this->filterRequestFields(["rule","cmd","status","group_id","task_name","description","cron_spec","timeout"]);
+        $params = $this->filterRequestFields(["rule","cmd","status","group_id","task_name","description","timeout"]);
         $res = $this->model->where([
             "group_id" => $params['group_id'],
             "task_name" => $params['task_name'],
@@ -74,7 +71,7 @@ class task extends base
      */
     public function edit()
     {
-        $params = $this->filterRequestFields(["id","rule","cmd","status","group_id","task_name","description","cron_spec","timeout"]);
+        $params = $this->filterRequestFields(["id","rule","cmd","status","group_id","task_name","description","timeout"]);
         $taskRes = $this->model->where(["id"=>$params['id']])->find();
         if (!$taskRes) {
             $this->resultJson(-1,false,"任务不存在");
@@ -120,8 +117,21 @@ class task extends base
      */
     public function lists()
     {
-        $params = $this->filterRequestFields(["start_time","end_time","group_id"]);
-
+        $params = $this->filterRequestFields();
+        $page = 1;
+        $pageNum = 10;
+        $where = [];
+        if ($params["page"] and $params["pageNum"]) {
+            $page = ($params["page"] - 1) * $params['pageNum'];
+        }
+        if ($params['group_id']) {
+            $where['group_id'] = $params['group_id'];
+        }
+        if ($params["start_time"] and $params["end_time"]) {
+            $where[] = ['create_time','between time', [strtotime($params["start_time"]),strtotime($params["end_time"])]];
+        }
+        $res = $this->model->fetchSql()->where($where)->limit($page , $pageNum)->order("id desc")->select();
+        return $this->resultJson($res ? 0 : -1, $res ?? [], "OK");
     }
 
 

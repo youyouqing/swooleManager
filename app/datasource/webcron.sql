@@ -7,8 +7,6 @@ CREATE TABLE `t_task` (
   `rule` varchar(100) NOT NULL DEFAULT '' COMMENT '时间表达式',
   `cmd` text NOT NULL COMMENT '命令详情',
   `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0停用 1启用',
-  `notify` tinyint(4) NOT NULL DEFAULT '0' COMMENT '通知设置',
-  `notify_email` text NOT NULL COMMENT '通知人列表',
   `timeout` smallint(6) NOT NULL DEFAULT '0' COMMENT '超时设置',
   `execute_times` int(11) NOT NULL DEFAULT '0' COMMENT '累计执行次数',
   `create_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',

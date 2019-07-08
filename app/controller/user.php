@@ -33,7 +33,7 @@ class user extends base
      */
     public function register()
     {
-        $this->filterRequestFields(["user_name", "password",]);
+        $this->filterRequestFields(["user_name", "password"]);
         $existRes = userModel::where([
             "user_name" => $this->serverParams('user_name'),
             "status"    => 1,//激活用户
@@ -61,17 +61,13 @@ class user extends base
      */
     public function login()
     {
-        $user_name = $this->serverParams('user_name');
-        $password = $this->serverParams('password');
-        if (empty($user_name) || empty($password)) {
-            return $this->resultJson(-1,false,"参数不正确");
-        }
-        $existRes = userModel::where([
-            "user_name" => $this->serverParams('user_name'),
-            "password"    => md5($password),
+        $params = $this->filterRequestFields(["user_name","password"]);
+        $existRes = $this->model->where([
+            "user_name" => $params['user_name'],
+            "password"    => md5($params['password']),
         ])->find();
         if (!$existRes) {
-            return $this->resultJson(-1,false,"用户不存在");
+            return $this->resultJson(-1,false,"用户名或密码不正确");
         }
         if ($existRes['status'] != 1) {
             return $this->resultJson(-1,false,"账号被冻结");

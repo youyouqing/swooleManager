@@ -70,8 +70,8 @@ class taskGroup extends base
             return $this->resultJson(-1, false, "您没有权限编辑该分组");
         }
         $res = $this->model->where(["id" => $params['group_id']])->save([
-            "group_name" => $params['group_name'],
-            "description" => $params['description'],
+            "group_name" => $params['group_name'] ?? $exist['group_name'],
+            "description" => $params['description'] ?? $exist['description'],
             "update_time" => time(),
         ]);
         return $this->resultJson($res ? 0 : -1, boolval($res), $res ? "修改成功" : "修改失败或者无需修改");

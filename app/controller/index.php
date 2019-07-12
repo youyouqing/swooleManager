@@ -2,6 +2,7 @@
 
 namespace app\controller;
 
+use app\extend\orm;
 use Cron\CronExpression;
 
 class index extends base
@@ -26,6 +27,8 @@ class index extends base
 
     public function aaa()
     {
-        echo "aaa";
+        $res = orm::shareInstance()->getPoolCon();
+        orm::shareInstance()->setConn($res)->table("t_task_log")->limit(100)->select();
+        return $this->resultJson(0,$res);
     }
 }

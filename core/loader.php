@@ -8,6 +8,8 @@
 
 namespace core;
 
+use app\extend\orm;
+
 class loader
 {
     static public function load()
@@ -60,7 +62,7 @@ class loader
      */
     static public function initDatabases()
     {
-        //TODO
+        orm::shareInstance()->init();
     }
 
     /**

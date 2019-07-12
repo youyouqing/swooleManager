@@ -43,22 +43,27 @@ class Di
         $this->container[$key] = $value;
     }
 
-    function delete($key)
+    public function delete($key)
     {
         unset($this->container[$key]);
     }
 
-    function clear()
+    public function clear()
     {
         $this->container = array();
     }
 
-    function get($key)
+    public function get($key)
     {
         if (isset($this->container[$key])) {
             $obj = $this->container[$key];
             return $obj;
         }
         return false;
+    }
+
+    public function getAll()
+    {
+        return $this->container ?? false;
     }
 }

@@ -9,7 +9,9 @@
 namespace core\server;
 
 
+use function app\common\getMillisecond;
 use app\common\result;
+use app\model\log;
 use core\CronManager;
 use core\Di;
 use core\loader;
@@ -167,8 +169,19 @@ class http
                             'task_next_time' => $cronInstance->getNextRunDate()->format("Y-m-d H:i:s"),
                             'running' => 0
                         ]);
+                    $start_time = getMillisecond();
                     $res = \co::exec($data['cmd']);
-                    Di::shareInstance()->get("LOG")->log("任务".$data['id'].":执行结果=>".$res['output']."执行时间：".date("Y-m-d H:i:s"));
+                    $end_time = getMillisecond();
+                    $log = "任务".$data['id'].":执行结果=>".$res['output']."执行时间：".date("Y-m-d H:i:s"."消耗时长："."毫秒");
+                    Di::shareInstance()->get("LOG")->log($log);
+                    (new log())->insert([
+                        "task_id" => $data['id'],
+                        "output" => $res['output'],
+                        "error" => "",
+                        "status" => 1,
+                        "process_time" => "ddd",
+                        "create_time" => time(),
+                    ]);
                 });
             });
     }

@@ -16,4 +16,5 @@ return [
     'debug'           => true,
     //表前缀
     'prefix'          => '',
+    'charset'         => 'utf8'
 ];

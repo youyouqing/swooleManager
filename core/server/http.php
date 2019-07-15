@@ -11,6 +11,7 @@ namespace core\server;
 
 use function app\common\getMillisecond;
 use app\common\result;
+use app\extend\mysqlPool;
 use app\model\log;
 use core\CronManager;
 use core\Di;
@@ -129,17 +130,20 @@ class http
     static public function onWorkerStart($serv, $worker_id)
     {
         if ($worker_id == 2) {
-            swoole_timer_tick(1 * 1000 , function () use ($serv) {
+            swoole_timer_tick(1 * 1000, function () use ($serv) {
                 CronManager::shareInstance()->sendTaskProcess($serv);
             });
         }
 
         if ($worker_id == 0) {
             //10秒热更新
-            $serv->tick(1 * 1000, function ($id) use ($serv,$worker_id){
+            $serv->tick(1 * 1000, function ($id) use ($serv, $worker_id) {
                 //TODO   热更新
 //                $serv->reload();
             });
+        }
+        if ($worker_id == 1) {
+            mysqlPool::shareInstance()->checkPool();
         }
     }
 

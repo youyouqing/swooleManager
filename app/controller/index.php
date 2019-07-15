@@ -2,6 +2,8 @@
 
 namespace app\controller;
 
+use function app\common\getPoolConnection;
+use app\extend\mysqlPool;
 use app\extend\orm;
 use Cron\CronExpression;
 
@@ -25,10 +27,17 @@ class index extends base
     }
 
 
-    public function aaa()
+    public function testAbWithPool()
     {
-        $res = orm::shareInstance()->getPoolCon();
-        orm::shareInstance()->setConn($res)->table("t_task_log")->limit(100)->select();
+        $conn = getPoolConnection();
+        $res = orm::shareInstance()->setConn($conn)->table("t_task_log")->limit(100)->select();
+        return $this->resultJson(0,$res);
+    }
+
+    public function testAbWithoutPool()
+    {
+        $conn = getPoolConnection();
+        $res = orm::shareInstance()->setConn($conn)->table("t_task_log")->limit(100)->select();
         return $this->resultJson(0,$res);
     }
 }

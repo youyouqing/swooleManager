@@ -8,6 +8,7 @@
 
 namespace core;
 
+use app\extend\mysqlPool;
 use app\extend\orm;
 
 class loader
@@ -62,7 +63,7 @@ class loader
      */
     static public function initDatabases()
     {
-        orm::shareInstance()->init();
+        mysqlPool::shareInstance()->init();
     }
 
     /**

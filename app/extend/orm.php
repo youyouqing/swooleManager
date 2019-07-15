@@ -162,23 +162,35 @@ class orm
     /**
      * 支持断线重连的查询器
      */
-    public function queryWithReConnect($sql , $pdoType)
+    public function queryWithReConnect($sql , $type)
     {
         try{
-            switch ($pdoType) {
-                case \PDO::FETCH_ASSOC:
-                    $result = $this->conn->query( $this->sql )->fetchAll($pdoType);
+            switch ($type) {
+                case "SELECT":
+                    $result = $this->conn->query( $this->sql )->fetchAll(\PDO::FETCH_ASSOC);
                     backPoolConnection($this->conn);
                     return $result;
-                break;
+                    break;
 
+                case "INSERT":
+                    $this->conn->exec( $this->sql );
+                    backPoolConnection($this->conn);
+                    return $this->conn->lastInsertId();
+                    break;
+
+                case "UPDATE":
+                case "DELETE":
+                    $update = $this->conn->exec( $this->sql );
+                    backPoolConnection($this->conn);
+                    return $update;
+                    break;
             }
         } catch (\PDOException $e) {
             if ($e->errorInfo[0] == 70100 || $e->errorInfo[0] == 2006){
                //这两个状态代表数据库挂了
                 $reCount = 0;
                 while ($reCount < $this->Recount) {
-                    $this->queryWithReConnect($sql,$pdoType);
+                    $this->queryWithReConnect($sql,$type);
                     $reCount ++;
                     Di::shareInstance()->get(Di::DI_LOG)->log("mysql断线重连中。。次数:".$reCount);
                 }
@@ -191,14 +203,14 @@ class orm
     public function select()
     {
         $this->ParseSelectSql();
-        $row = $this->queryWithReConnect($this->sql , \PDO::FETCH_ASSOC);
+        $row = $this->queryWithReConnect($this->sql , "SELECT");
         return $row;
     }
     //查询一条
     public function find()
     {
         $this->ParseSelectSql();
-        $row = $this->queryWithReConnect($this->sql , \PDO::FETCH_ASSOC);
+        $row = $this->queryWithReConnect($this->sql , "SELECT");
         return $row;
     }
     //添加数据
@@ -211,9 +223,8 @@ class orm
         foreach( $data as $key=>$vo ){
             $this->sql .= " `{$key}` = '" . $vo . "',";
         }
-        $this->conn->exec( rtrim( $this->sql, ',' ) );
-        backPoolConnection($this->conn);
-        return $this->conn->lastInsertId();
+        $sql = rtrim( $this->sql, ',' );
+        return $this->queryWithReConnect($sql,"INSERT");
     }
     //更新语句
     public function update( $data )
@@ -226,15 +237,13 @@ class orm
             $this->sql .= " `{$key}` = '" . $vo . "',";
         }
         $this->sql = rtrim( $this->sql, ',' ) . ' where ' . $this->alias['where'];
-        backPoolConnection($this->conn);
-        return $this->conn->exec( $this->sql );
+        return $this->queryWithReConnect($this->sql,"UPDATE");
     }
     //删除语句
     public function delete()
     {
         $this->ParseDeleteSql();
-        backPoolConnection($this->conn);
-        return $this->conn->exec( $this->sql );
+        return $this->queryWithReConnect($this->sql,"DELETE");
     }
     //获取最后一次执行的sql语句
     public function getLastSql()

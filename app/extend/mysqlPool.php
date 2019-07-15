@@ -130,11 +130,7 @@ class mysqlPool
      */
     public function checkPool()
     {
-        echo "准备检查中...".PHP_EOL;
         swoole_timer_tick($this->heartTime , function () {
-
-            echo "检查中...".PHP_EOL;
-
             //清理空闲链接 阀值设定为一半的最大连接数
             $poolConNum = count($this->pool);
             if ($poolConNum > intval($this->maxInstance/2)) {
@@ -149,11 +145,6 @@ class mysqlPool
                     $this->createDb();
                 }
             }
-            //促活链接 TODO
-            foreach ($this->pool as $item) {
-
-            }
-
         });
     }
 
